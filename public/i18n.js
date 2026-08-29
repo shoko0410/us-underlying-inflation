@@ -255,20 +255,20 @@ window.I18N = {
     monthShort: (m) => m.replace('-', '.'),
 
     doc: {
-      title: '米国の基調的インフレ — 刈り込み平均PCE・コアCPI・粘着価格',
-      desc: '一時的なノイズを取り除いた米国の基調的インフレ指標をまとめたページ。刈り込み平均PCE、住居費を除くコアCPI、アトランタ連銀の粘着価格・伸縮価格を1967年から比較し、品目別の価格変化分布と3%超の品目割合まで併せて見られます。',
+      title: '米国の基調的インフレ — Trimmed Mean PCE・Core CPI・Sticky',
+      desc: '一時的なノイズを取り除いた米国の基調的インフレ指標をまとめたページ。Trimmed Mean PCE、住居費を除く Core CPI、アトランタ連銀の Sticky・Flexible を1967年から比較し、品目別の価格変化分布と3%超の品目割合まで併せて見られます。',
     },
 
     html: {
       h1: '米国の基調的インフレ',
       subtitle:
         '総合インフレから<strong>一時的なノイズを取り除いた後に残るトレンド</strong>を見る指標を集めました。' +
-        '何をどう取り除くかが指標ごとに違います — <strong>刈り込み平均PCE</strong>はその月の' +
-        '極端値を切り落とし、<strong>コア</strong>は食料・エネルギーを常に除き、' +
-        '<strong>住居費除く</strong>はラグの長い住居費まで差し引き、' +
-        '<strong>粘着価格</strong>は値段が変わりにくい品目にウェイトを寄せます。' +
-        '一番上の数字は、そのうち住居費まで除いたコアCPIです。',
-      heroLabel: '住居費除くコアCPI・前年比',
+        '何をどう取り除くかが指標ごとに違います — <strong>Trimmed Mean PCE</strong> はその月の' +
+        '極端値を切り落とし、<strong>Core</strong> は食料・エネルギーを常に除き、' +
+        '<strong>ex-住居費</strong> はラグの長い住居費まで差し引き、' +
+        '<strong>Sticky</strong> は値段が変わりにくい品目にウェイトを寄せます。' +
+        '一番上の数字は、そのうち住居費まで除いた Core CPI です。',
+      heroLabel: 'Core CPI ex-住居費・前年比',
       filterLabel: '期間',
 
       yoyTitle: '前年比上昇率（YoY）',
@@ -276,8 +276,8 @@ window.I18N = {
         'PCE3種、CPI4種、アトランタ連銀4種を同じ軸で比較します。前の7つは' +
         '<strong>バスケットから品目を除く</strong>方式で、後ろの4つは価格が' +
         '<strong>変わる頻度でウェイトを付け替えた</strong>指標です — 変わりにくい' +
-        '価格（粘着価格）は企業の先行きの物価観を反映するとみて基調的インフレとして、' +
-        'よく変わる価格（伸縮価格）はエネルギー・食料ショックの通り道として読みます。' +
+        '価格（Sticky）は企業の先行きの物価観を反映するとみて基調的インフレとして、' +
+        'よく変わる価格（Flexible）はエネルギー・食料ショックの通り道として読みます。' +
         '11本を一度に表示すると密集するので、<strong>凡例をクリックして</strong>必要なものだけ' +
         '表示することをおすすめします。縦の灰色帯はNBERの景気後退期で、下のグラフにも同じく入っています。' +
         '横の基準線はFRBの目標2%です。',
@@ -285,9 +285,9 @@ window.I18N = {
       momTitle: '短期モメンタム — 年率換算',
       momSub:
         '前年比よりも数か月早くトレンドの転換を示しますが、その分だけ振れも大きくなります。' +
-        '刈り込み平均の1か月・6か月年率はダラス連銀が直接公表している値で、' +
-        'コアPCEの3・6か月年率は季節調整済み指数から計算しました。' +
-        '住居費除くコア粘着価格の3か月年率もアトランタ連銀の公表値です。',
+        'Trimmed Mean の1か月・6か月年率はダラス連銀が直接公表している値で、' +
+        'Core PCE の3・6か月年率は季節調整済み指数から計算しました。' +
+        'Core Sticky ex-住居費 の3か月年率もアトランタ連銀の公表値です。',
 
       distTitle: '品目別の価格変化の分布',
       distSub:
@@ -295,7 +295,7 @@ window.I18N = {
         '分布です。<strong>青はFRB目標より下、灰色は目標近辺（2–3%）、赤は上</strong>で、' +
         '目標から離れるほど色が濃くなります。太い線は<strong>3%超の割合</strong>で、' +
         '物価上昇が一部の品目に偏っているのか、それとも全面的に広がっているのかを示します。' +
-        '刈り込み平均が低くてもこの割合が高ければ、上昇圧力が幅広く残っているということです。' +
+        'Trimmed Mean が低くてもこの割合が高ければ、上昇圧力が幅広く残っているということです。' +
         '細い線が月次の元の値、太い線が12か月中心移動平均です — 平均は前後6か月が' +
         'すべて揃って初めて描けるため、直近6か月は細い線だけになります。',
 
@@ -314,8 +314,8 @@ window.I18N = {
       notesTitle: '読むときの注意点',
       distNoteLead: '分布データの出典と限界。',
       noteTrim:
-        '<strong>刈り込み平均は「除く」指標ではなく「切り落とす」指標です。</strong>' +
-        'コアPCEは食料・エネルギーを常に除きますが、刈り込み平均は毎月、品目を価格変化の' +
+        '<strong>Trimmed Mean は「除く」指標ではなく「切り落とす」指標です。</strong>' +
+        'Core PCE は食料・エネルギーを常に除きますが、Trimmed Mean は毎月、品目を価格変化の' +
         '順に並べたうえで<strong>支出ウェイト基準で下位24%・上位31%</strong>を切り落とし、残った中央を' +
         '平均します。ですからある月はガソリンが切り落とされ、別の月には残ります。この非対称な' +
         '刈り込み率（24/31）は、ダラス連銀が1977〜2009年の標本でPCE全体のトレンドを最もよく' +
@@ -327,19 +327,19 @@ window.I18N = {
         '「今月はどうだったか」、後者は「1年にわたって熱いものがどれだけあるか」を見ています。' +
         '1か月基準のほうがはるかに振れるので、両者の値が違うのは正常です。',
       noteSticky:
-        '<strong>粘着価格と伸縮価格は「除く」指標ではなく「ウェイトを付け替える」指標です。</strong>' +
+        '<strong>Sticky と Flexible は「除く」指標ではなく「ウェイトを付け替える」指標です。</strong>' +
         'アトランタ連銀はCPIの構成品目を価格がどれくらいの頻度で変わるかで分け、平均4.3か月以上' +
-        '価格が据え置かれる品目だけを集めた<strong>粘着価格</strong>と、よく変わる品目だけを集めた' +
-        '<strong>伸縮価格</strong>を別に計算しています。粘着的な価格は企業が<em>先行きの</em>物価を' +
+        '価格が据え置かれる品目だけを集めた <strong>Sticky</strong> と、よく変わる品目だけを集めた' +
+        '<strong>Flexible</strong> を別に計算しています。粘着的な価格は企業が<em>先行きの</em>物価を' +
         'どう見るかを織り込んで決まるとみて基調的インフレとして引用され、伸縮的な価格はエネルギー・' +
-        '食料ショックが入ってくる通り道として読まれます。ですから伸縮価格が4.7%に跳ねているのに' +
-        '粘着価格が2.8%にとどまっていれば、足元の物価上昇はおおむね' +
+        '食料ショックが入ってくる通り道として読まれます。ですから Flexible が4.7%に跳ねているのに' +
+        'Sticky が2.8%にとどまっていれば、足元の物価上昇はおおむね' +
         '<strong>一時的なショック側</strong>だという解釈ができます。',
       noteHero:
-        '<strong>なぜ一番上の数字が住居費除くコアCPIなのか。</strong>住居費は市場家賃を1年以上の' +
+        '<strong>なぜ一番上の数字が Core CPI ex-住居費 なのか。</strong>住居費は市場家賃を1年以上の' +
         'ラグを伴って反映します。そのため住居費まで差し引いたこの指標が、物価の方向転換を' +
-        '総合や通常のコアより早く示すことが多く、見出しの位置に置きました。' +
-        '刈り込み平均PCEはすぐ下の最初のタイルにあります。なお、FRBの2%目標が基準としているのは' +
+        '総合や通常の Core より早く示すことが多く、見出しの位置に置きました。' +
+        'Trimmed Mean PCE はすぐ下の最初のタイルにあります。なお、FRBの2%目標が基準としているのは' +
         '<strong>PCE</strong>である点は別途ご記憶ください。',
       noteNber:
         '<strong>景気後退期は事後的に確定されたものです。</strong>NBERの景気循環日付決定委員会は' +
@@ -360,7 +360,7 @@ window.I18N = {
       noteShutdown:
         '<strong>2025年10月のCPIは存在しません。</strong>連邦政府のシャットダウンにより、その月の調査が' +
         '行われませんでした。存在しない値を補間せず線を切って表示しており、3・6か月の年率換算の' +
-        '計算にも波及します。<strong>ただし粘着価格系列にはこの月も値があり</strong>、PCE系列は' +
+        '計算にも波及します。<strong>ただし Sticky 系列にはこの月も値があり</strong>、PCE系列は' +
         'BEAが別途集計しているため影響を受けません。',
       noteSa:
         '<strong>季節調整の基準。</strong>PCE系列は原資料が季節調整済み（SA）のみのため全項目SAです。' +
@@ -368,14 +368,14 @@ window.I18N = {
         '前年同月比では季節要因が自然に相殺されますが、3・6か月の変化はSAを使わないと季節性を' +
         'トレンドと読み違えてしまうためです。',
       noteSources:
-        '<strong>出典。</strong>刈り込み平均はダラス連銀（<code>PCETRIM12M159SFRBDAL</code>、' +
-        '<code>PCETRIM1M158SFRBDAL</code>、<code>PCETRIM6M680SFRBDAL</code>）、総合・コアPCEは' +
+        '<strong>出典。</strong>Trimmed Mean はダラス連銀（<code>PCETRIM12M159SFRBDAL</code>、' +
+        '<code>PCETRIM1M158SFRBDAL</code>、<code>PCETRIM6M680SFRBDAL</code>）、Headline・Core PCE は' +
         'BEAの物価指数（<code>PCEPI</code>、<code>PCEPILFE</code>）をFREDから取得して変化率を計算しました。' +
         'CPI4種は労働統計局のPublic Data API（<code>CUUR0000SA0L12E</code>ほか）から直接取得しており、' +
         'FREDには「less food, shelter, and energy」系列がないためBLSが唯一の出典です。アトランタ連銀の' +
-        '系列は<code>CORESTICKM159SFRBATL</code>（コア粘着価格）、<code>STICKCPIM159SFRBATL</code>（粘着価格）、' +
-        '<code>CRESTKCPIXSLTRM159SFRBATL</code>（住居費除くコア粘着価格 — 名前のとおり' +
-        '食料・エネルギー・住居費をすべて除いたものです）、<code>FLEXCPIM159SFRBATL</code>（伸縮価格）' +
+        '系列は<code>CORESTICKM159SFRBATL</code>（Core Sticky）、<code>STICKCPIM159SFRBATL</code>（Sticky）、' +
+        '<code>CRESTKCPIXSLTRM159SFRBATL</code>（Core Sticky ex-住居費 — 名前のとおり' +
+        '食料・エネルギー・住居費をすべて除いたものです）、<code>FLEXCPIM159SFRBATL</code>（Flexible）' +
         'で、景気後退期は<code>USREC</code>です。',
     },
 
@@ -384,8 +384,8 @@ window.I18N = {
       filters: '期間フィルター',
       legendToggle: '系列の表示切り替え',
       legendStatic: '区間の色の凡例',
-      chartYoy: '刈り込み平均PCE、コア・総合PCE、CPI4種、アトランタ連銀の粘着価格・伸縮価格の前年比上昇率の推移を示す折れ線グラフ',
-      chartMom: '刈り込み平均とコアPCEの年率換算上昇率の推移を示す折れ線グラフ',
+      chartYoy: 'Trimmed Mean PCE、Core・Headline PCE、CPI4種、アトランタ連銀の Sticky・Flexible の前年比上昇率の推移を示す折れ線グラフ',
+      chartMom: 'Trimmed Mean と Core PCE の年率換算上昇率の推移を示す折れ線グラフ',
       chartDist: 'PCE構成品目の年率換算した価格変化の区間別支出加重割合を示す積み上げ棒グラフ',
       chartBreadth: '前年比で3%超上昇したPCE品目の加重割合と非加重割合の推移を示す折れ線グラフ',
       themeToDark: 'ダークモードに切り替え',
@@ -409,24 +409,24 @@ window.I18N = {
       ranges: { all: '全期間', '40y': '40年', '20y': '20年', '10y': '10年', '5y': '5年', '3y': '3年' },
 
       series: {
-        trimmedMean: '刈り込み平均PCE',
-        corePce: 'コアPCE',
-        headlinePce: '総合PCE',
-        coreExShelter: '住居費除くコアCPI',
-        coreCpi: 'コアCPI',
-        headlineCpi: '総合CPI',
+        trimmedMean: 'Trimmed Mean PCE',
+        corePce: 'Core PCE',
+        headlinePce: 'Headline PCE',
+        coreExShelter: 'Core CPI ex-住居費',
+        coreCpi: 'Core CPI',
+        headlineCpi: 'Headline CPI',
         shelter: '住居費',
-        coreSticky: 'コア粘着価格CPI',
-        stickyAll: '粘着価格CPI',
-        stickyExShelter: '住居費除くコア粘着価格',
-        flexCpi: '伸縮価格CPI',
+        coreSticky: 'Core Sticky CPI',
+        stickyAll: 'Sticky CPI',
+        stickyExShelter: 'Core Sticky ex-住居費',
+        flexCpi: 'Flexible CPI',
       },
       mom: {
-        tmAnn1m: '刈り込み平均 1か月年率',
-        tmAnn6m: '刈り込み平均 6か月年率',
-        coreAnn3m: 'コアPCE 3か月年率',
-        coreAnn6m: 'コアPCE 6か月年率',
-        stickyAnn3m: '住居費除くコア粘着価格 3か月年率',
+        tmAnn1m: 'Trimmed 1か月年率',
+        tmAnn6m: 'Trimmed 6か月年率',
+        coreAnn3m: 'Core PCE 3か月年率',
+        coreAnn6m: 'Core PCE 6か月年率',
+        stickyAnn3m: 'Core Sticky ex-住居費 3か月年率',
       },
       bands: {
         fell: '下落', b0_2: '0–2%', b2_3: '2–3%',
@@ -439,10 +439,10 @@ window.I18N = {
       above3Total: '3%超 合計',
 
       tiles: {
-        trimmedMean: ['刈り込み平均PCE', '前年比'],
-        corePce: ['コアPCE', '食料・エネルギー除く'],
-        headlinePce: ['総合PCE', '前年比'],
-        coreSticky: ['コア粘着価格CPI', 'アトランタ連銀'],
+        trimmedMean: ['Trimmed Mean PCE', '前年比'],
+        corePce: ['Core PCE', '食料・エネルギー除く'],
+        headlinePce: ['Headline PCE', '前年比'],
+        coreSticky: ['Core Sticky CPI', 'アトランタ連銀'],
         above3m1: ['3%超・1か月年率', '支出加重'],
         above3yoy: ['3%超・前年比', '支出加重'],
       },
@@ -454,11 +454,11 @@ window.I18N = {
       table: {
         month: '月',
         cols: {
-          trimmedMean: '刈り込み平均', corePce: 'コアPCE', headlinePce: '総合PCE',
-          coreExShelter: '住居費除くコアCPI', coreCpi: 'コアCPI', headlineCpi: '総合CPI',
-          shelter: '住居費', stickyExShelter: '住居費除くコア粘着', coreSticky: 'コア粘着',
-          stickyAll: '粘着価格', flexCpi: '伸縮価格',
-          tmAnn1m: '刈込 1m年率', tmAnn6m: '刈込 6m年率', coreAnn6m: 'コアPCE 6m',
+          trimmedMean: 'Trimmed Mean', corePce: 'Core PCE', headlinePce: 'Headline PCE',
+          coreExShelter: 'Core CPI ex-住居費', coreCpi: 'Core CPI', headlineCpi: 'Headline CPI',
+          shelter: '住居費', stickyExShelter: 'Core Sticky ex-住居費', coreSticky: 'Core Sticky',
+          stickyAll: 'Sticky', flexCpi: 'Flexible',
+          tmAnn1m: 'TM 1m年率', tmAnn6m: 'TM 6m年率', coreAnn6m: 'Core PCE 6m',
           above3m1: '3%超 1m', bWeighted: '3%超 YoY 加重', bUnweighted: '3%超 YoY 非加重',
         },
         caption: (from, to, n) =>
@@ -471,7 +471,7 @@ window.I18N = {
         `ダラス連銀の手法をそのまま適用して再計算したものです` +
         (m.validation
           ? ` — 公表された13か月と照合した平均誤差は${m.validation.meanAbsDev}%pt、` +
-            `刈り込み平均を逆算して公表系列と比較した平均誤差は${m.validation.trimMeanAbsDev}%ptです。`
+            `Trimmed Mean を逆算して公表系列と比較した平均誤差は${m.validation.trimMeanAbsDev}%ptです。`
           : '。') +
         ' 区間の境界（0・2・3・5・10%）は年率換算基準で、どの区間にも入らない残りが「下落」です。',
       distNoteAbsent: '分布データがまだビルドされていません。scripts/build-distribution.mjs を実行してください。',
