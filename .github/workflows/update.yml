@@ -50,11 +50,16 @@ jobs:
       # Must run first: fetch-data.mjs merges data/distribution.json into the payload
       # the site loads. --strict fails the run rather than committing a distribution
       # whose component mapping broke or that no longer tracks the published window.
+      #
+      # --if-changed reads the Dallas Fed's 13-month window (20 KB) and stops there when
+      # it matches what the committed distribution was built against. Only a new month
+      # or a revision reaches BEA, whose underlying-detail tables are ~109 MB across ten
+      # calls — against a 100 MB-per-minute quota, so they are paced.
       - name: Rebuild the component distribution from BEA
         env:
           BEA_API_KEY: ${{ secrets.BEA_API_KEY }}
           FRED_API_KEY: ${{ secrets.FRED_API_KEY }}
-        run: node scripts/build-distribution.mjs --fresh --strict
+        run: node scripts/build-distribution.mjs --fresh --strict --if-changed
 
       - name: Fetch latest PCE and CPI data
         env:

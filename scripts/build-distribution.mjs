@@ -42,6 +42,10 @@ const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const FRESH = process.argv.includes('--fresh');
 const VERIFY = process.argv.includes('--verify');
 const STRICT = process.argv.includes('--strict');
+// CI mode: the distribution only moves when BEA publishes or revises, and the Dallas
+// Fed's 13-month window is a 20 KB read that tells us either way. Checking it first
+// turns a quiet day from a 109 MB BEA pull into nothing at all.
+const IF_CHANGED = process.argv.includes('--if-changed');
 
 const PRICE_TABLE = 'U20404'; // BEA 2.4.4U — price indexes by type of product
 const NOMINAL_TABLE = 'U20405'; // BEA 2.4.5U — expenditures by type of product
@@ -103,6 +107,19 @@ const deviation = (pairs) => {
  * BEA caps a single response, and monthly underlying detail is ~180 lines x 12 months
  * per year, so this asks a decade at a time. The Year parameter takes a comma list.
  */
+/* Each decade of monthly underlying detail is ~11 MB and BEA allows 100 MB a minute,
+   so ten uncached calls fired back to back trip the quota on the last one. Spacing them
+   keeps the peak under the cap; the retry above is the safety net if it still slips. */
+const BEA_PACE_MS = 8000;
+let lastBeaCall = 0;
+async function paceBea() {
+  const since = Date.now() - lastBeaCall;
+  if (lastBeaCall && since < BEA_PACE_MS) {
+    await new Promise((r) => setTimeout(r, BEA_PACE_MS - since));
+  }
+  lastBeaCall = Date.now();
+}
+
 async function fetchBEA(table, apiKey) {
   const byLine = new Map(); // LineNumber -> { desc, values: Map<"YYYY-MM", number> }
 
@@ -112,6 +129,7 @@ async function fetchBEA(table, apiKey) {
 
     const json = await cached(`bea_${table}_${years[0]}_${years[years.length - 1]}`, () =>
       withRetry(`BEA ${table} ${years[0]}-${years[years.length - 1]}`, async () => {
+        await paceBea();
         const url = 'https://apps.bea.gov/api/data/?' + new URLSearchParams({
           UserID: apiKey,
           method: 'GetData',
@@ -131,7 +149,7 @@ async function fetchBEA(table, apiKey) {
           throw e;
         }
         return j;
-      }, 3, log));
+      }, 4, log));
 
     for (const row of json?.BEAAPI?.Results?.Data ?? []) {
       const m = String(row.TimePeriod).match(/^(\d{4})M(\d{2})$/);
@@ -329,6 +347,26 @@ async function main() {
   const publishedLast = published.months[published.months.length - 1];
   log(`  published     ${published.months[0]} … ${publishedLast} (${published.months.length} months)`);
 
+  const outPath = path.join(ROOT, 'data', 'distribution.json');
+  // Compared exactly, not within a tolerance: any revision at all moves these numbers,
+  // and a revision is precisely the thing that should force a rebuild.
+  const snapshot = { months: published.months, above3: published.above3.map(round2) };
+  if (IF_CHANGED && existsSync(outPath)) {
+    try {
+      const prev = JSON.parse(await readFile(outPath, 'utf8'));
+      const seen = prev.source?.publishedSnapshot;
+      if (seen && JSON.stringify(seen) === JSON.stringify(snapshot)) {
+        log('');
+        log(`--if-changed: the published window is unchanged through ${publishedLast}` +
+            ` and data/distribution.json already covers it — skipping the BEA rebuild.`);
+        return;
+      }
+      log(`  window moved since the last build; rebuilding from BEA`);
+    } catch {
+      log('  previous distribution unreadable; rebuilding from BEA');
+    }
+  }
+
   log('');
   log(`BEA underlying detail — ${PRICE_TABLE} (prices) and ${NOMINAL_TABLE} (expenditures):`);
   const priceLines = await fetchBEA(PRICE_TABLE, beaKey);
@@ -503,6 +541,8 @@ async function main() {
       roster: rosterSource,
       method: 'Federal Reserve Bank of Dallas WP 0506 / tmrates.txt',
       publishedWindow: { first: published.months[0], last: publishedLast },
+      // Kept so --if-changed can tell a quiet day from a revision without calling BEA.
+      publishedSnapshot: snapshot,
     },
     method: {
       components: map.resolved.length,
@@ -524,7 +564,7 @@ async function main() {
   };
 
   await mkdir(path.join(ROOT, 'data'), { recursive: true });
-  await writeFile(path.join(ROOT, 'data', 'distribution.json'), JSON.stringify(payload, null, 2));
+  await writeFile(outPath, JSON.stringify(payload, null, 2));
   log('');
   log(`written       data/distribution.json (${computed.months.length} months)`);
   log(`latest        above 3% = ${computed.above3[computed.above3.length - 1]}%`);
