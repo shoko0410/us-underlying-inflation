@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="ko" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>미국 기조적 물가 — Trimmed Mean PCE · 근원 CPI · Sticky</title>
+<meta name="description" id="meta-desc" content="일시적 소음을 걷어낸 미국 기조적 물가 지표 모음. Trimmed Mean PCE, 주거비 제외 근원 CPI, 애틀랜타 연준 Sticky·Flexible을 1967년부터 비교하고, 품목별 가격 변화 분포와 3% 초과 항목 비중까지 함께 봅니다.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%232a78d6'/%3E%3Cpath d='M5 22 L12 13 L18 18 L27 7' stroke='white' stroke-width='3' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<div class="wrap">
+
+  <header class="masthead">
+    <div>
+      <h1 data-i18n="h1">미국 기조적 물가</h1>
+      <p class="subtitle" data-i18n="subtitle">
+        헤드라인 물가에서 <strong>일시적 소음을 걷어내고 남는 추세</strong>를 보는 지표들을 모았습니다.
+        무엇을 어떻게 걷어내느냐가 지표마다 다릅니다 — <strong>Trimmed Mean PCE</strong>는 그 달의
+        극단치를 잘라내고, <strong>Core</strong>는 식료품·에너지를 언제나 빼고,
+        <strong>ex-주거비</strong>는 시차가 긴 주거비까지 덜어내며,
+        <strong>Sticky</strong>는 가격이 잘 안 변하는 항목에 가중치를 몰아줍니다.
+        맨 위 숫자는 그중 주거비까지 제외한 근원 CPI입니다.
+      </p>
+    </div>
+    <div class="masthead-actions">
+      <button class="icon-btn" id="lang-toggle" type="button">日本語</button>
+      <button class="icon-btn" id="theme-toggle" type="button" aria-live="polite">🌙 다크</button>
+    </div>
+  </header>
+
+  <section class="hero" aria-labelledby="hero-label">
+    <p class="hero-label" id="hero-label" data-i18n="heroLabel">Core CPI ex-주거비 · 전년 대비</p>
+    <div class="hero-row">
+      <span class="hero-figure" id="hero-value">—</span>
+      <span class="delta" id="hero-delta"></span>
+      <span class="hero-meta" id="hero-meta"></span>
+    </div>
+  </section>
+
+  <section class="tiles" id="tiles" data-aria="tiles" aria-label="주요 지표 요약"></section>
+
+  <!-- One filter row, scoping every chart, stat and table below it. -->
+  <div class="filters" role="group" data-aria="filters" aria-label="기간 필터">
+    <span class="filter-label" data-i18n="filterLabel">기간</span>
+    <div class="seg" id="range-seg"></div>
+  </div>
+
+  <section class="card">
+    <div class="card-head">
+      <h2 data-i18n="yoyTitle">전년 대비 상승률 (YoY)</h2>
+      <p class="card-sub" data-i18n="yoySub">
+        PCE 3종, CPI 4종, 애틀랜타 연준 4종을 한 축에서 비교합니다. 앞의 일곱은
+        <strong>바구니에서 항목을 빼는</strong> 방식이고, 뒤의 넷은 가격이
+        <strong>바뀌는 빈도로 가중치를 다시 준</strong> 지표입니다 — 잘 안 변하는
+        가격(Sticky)은 기업의 향후 물가 전망을 반영한다고 보아 기조적 물가로,
+        자주 변하는 가격(Flexible)은 에너지·식품 충격의 통로로 읽습니다.
+        열한 개를 한꺼번에 켜면 빽빽하니 <strong>범례를 눌러</strong> 필요한 것만 보시기를
+        권합니다. 세로 회색 띠는 NBER 경기침체 구간으로 아래 차트들에도 똑같이 들어가 있고,
+        가로 기준선은 연준 목표 2%입니다.
+      </p>
+    </div>
+    <div class="legend" id="legend-yoy" role="group" data-aria="legendToggle" aria-label="계열 표시 전환"></div>
+    <div class="chart-host" id="chart-yoy" tabindex="0" role="img"
+         data-aria="chartYoy" aria-label="Trimmed Mean PCE, Core·헤드라인 PCE, CPI 계열 4종, 애틀랜타 연준 Sticky·Flexible의 전년 대비 상승률 추이 선그래프"></div>
+  </section>
+
+  <section class="card">
+    <div class="card-head">
+      <h2 data-i18n="momTitle">단기 모멘텀 — 연율화</h2>
+      <p class="card-sub" data-i18n="momSub">
+        전년 대비보다 추세 전환을 몇 달 빠르게 보여주지만 그만큼 진폭이 큽니다.
+        Trimmed Mean의 1개월·6개월 연율은 댈러스 연준이 직접 발표하는 값이고,
+        Core PCE의 3·6개월 연율은 계절조정 지수에서 계산했습니다.
+        Core Sticky ex-주거비 3개월 연율도 애틀랜타 연준 발표값입니다.
+      </p>
+    </div>
+    <div class="legend" id="legend-mom" role="group" data-aria="legendToggle" aria-label="계열 표시 전환"></div>
+    <div class="chart-host" id="chart-mom" tabindex="0" role="img"
+         data-aria="chartMom" aria-label="Trimmed Mean과 Core PCE의 연율화 상승률 추이 선그래프"></div>
+  </section>
+
+  <section class="card" id="card-dist" hidden>
+    <div class="card-head">
+      <h2 data-i18n="distTitle">품목별 가격 변화 분포</h2>
+      <p class="card-sub" data-i18n="distSub">
+        매달 PCE 구성품목의 연율화 가격 변화를 구간별로 나누고 <strong>지출 비중으로 가중</strong>한
+        분포입니다. <strong>파란색은 연준 목표 아래, 회색은 목표 언저리(2–3%), 붉은색은 위</strong>이고,
+        목표에서 멀어질수록 색이 진해집니다. 굵은 선은 <strong>3% 초과 비중</strong>
+        으로, 물가 상승이 몇몇 품목에 몰려 있는지 아니면 전방위로 퍼져 있는지를 보여줍니다.
+        Trimmed Mean이 낮아도 이 비중이 높으면 상승 압력이 넓게 남아 있다는 뜻입니다.
+        가는 선이 월별 원값, 굵은 선이 12개월 중심이동평균입니다 — 평균은 앞뒤 6개월이
+        모두 있어야 그리므로 마지막 6개월은 가는 선만 나옵니다.
+      </p>
+    </div>
+    <div class="legend legend-static" id="legend-dist" role="group" data-aria="legendStatic" aria-label="구간 색상 범례"></div>
+    <div class="chart-host" id="chart-dist" tabindex="0" role="img"
+         data-aria="chartDist" aria-label="PCE 구성품목의 연율화 가격 변화 구간별 지출가중 비중 누적 막대그래프"></div>
+  </section>
+
+  <section class="card" id="card-breadth" hidden>
+    <div class="card-head">
+      <h2 data-i18n="breadthTitle">물가 상승의 확산 정도 — 3% 초과 항목 비중</h2>
+      <p class="card-sub" data-i18n="breadthSub">
+        PCE 구성품목 중 <strong>전년 대비 가격이 3% 넘게 오른 항목</strong>의 비중입니다.
+        위 카드가 "이번 달 가격 변화가 어떻게 퍼져 있나"를 본다면, 여기는
+        <strong>"바구니의 얼마가 1년째 뜨거운가"</strong>를 봅니다.
+        <strong>가중</strong>은 각 항목의 소비지출 비중으로 잰 것이고,
+        <strong>비가중</strong>은 항목 수로만 센 것입니다. 가중이 비가중보다 높으면
+        <strong>지출이 큰 항목일수록 많이 오르고 있다</strong>는 뜻입니다.
+      </p>
+    </div>
+    <div class="legend" id="legend-breadth" role="group" data-aria="legendToggle" aria-label="계열 표시 전환"></div>
+    <div class="chart-host" id="chart-breadth" tabindex="0" role="img"
+         data-aria="chartBreadth" aria-label="전년 대비 3%를 넘게 오른 PCE 항목의 가중 비중과 비가중 비중 추이 선그래프"></div>
+  </section>
+
+  <section class="card">
+    <div class="card-head" style="display:flex;justify-content:space-between;align-items:flex-start;gap:16px;">
+      <div>
+        <h2 data-i18n="tableTitle">데이터 테이블</h2>
+        <p class="card-sub" data-i18n="tableSub">차트의 모든 값을 숫자로 확인할 수 있습니다. 최근 데이터가 위쪽입니다.</p>
+      </div>
+      <button class="icon-btn" id="table-toggle" type="button" aria-expanded="false" aria-controls="table-wrap">
+        표 열기
+      </button>
+    </div>
+    <div class="table-wrap" id="table-wrap" hidden></div>
+  </section>
+
+  <section class="notes">
+    <h2 data-i18n="notesTitle">읽을 때 주의할 점</h2>
+    <ul>
+      <li data-i18n="noteTrim">
+        <strong>Trimmed Mean은 "빼는" 지표가 아니라 "잘라내는" 지표입니다.</strong>
+        Core PCE는 식료품·에너지를 언제나 제외하지만, Trimmed Mean은 매달 품목들을 가격 변화
+        순으로 줄 세운 뒤 <strong>지출가중 기준 하위 24%·상위 31%</strong>를 잘라내고 남은 가운데를
+        평균합니다. 그래서 어느 달에는 휘발유가 잘려나가고 다른 달에는 살아남습니다. 이 비대칭
+        절사율(24/31)은 댈러스 연준이 1977~2009년 표본에서 전체 PCE 추세를 가장 잘 따라가도록
+        최적화해 고른 값입니다.
+      </li>
+      <li data-i18n="noteTwoThree">
+        <strong>"3% 초과"가 두 번 나오는데 기준이 다릅니다.</strong> 분포 카드의 52.0%는
+        <strong>이번 달</strong> 가격 변화를 연율로 환산했을 때 3%를 넘은 항목의 비중이고,
+        확산 카드의 63.7%는 <strong>전년 대비</strong> 3%를 넘은 항목의 비중입니다. 앞은
+        "이번 달이 어땠나", 뒤는 "1년째 뜨거운 게 얼마나 되나"를 봅니다. 1개월 기준이 훨씬
+        요동치므로 둘은 다른 값이 나오는 게 정상입니다.
+      </li>
+      <li id="note-dist">
+        <strong data-i18n="distNoteLead">분포 데이터의 출처와 한계.</strong>
+      </li>
+      <li data-i18n="noteSticky">
+        <strong>Sticky와 Flexible은 "빼는" 지표가 아니라 "가중치를 다시 주는" 지표입니다.</strong>
+        애틀랜타 연준은 CPI 구성 항목을 가격이 얼마나 자주 바뀌는지로 나눠, 평균 4.3개월 이상
+        가격이 고정되는 항목만 모은 <strong>Sticky</strong>와 자주 바뀌는 항목만 모은
+        <strong>Flexible</strong>을 따로 계산합니다. 끈적한 가격은 기업이 <em>앞으로의</em> 물가를
+        어떻게 볼지를 반영해 정해진다고 보아 기조적 물가로 인용되고, 유연한 가격은 에너지·식품
+        충격이 들어오는 통로로 읽습니다. 그래서 Flexible이 4.7%로 튀는데 Sticky가 2.8%에
+        머물면, 지금 물가 상승은 대체로 <strong>일시적 충격 쪽</strong>이라는 해석이 가능합니다.
+      </li>
+      <li data-i18n="noteHero">
+        <strong>왜 맨 위 숫자가 Core CPI ex-주거비인가.</strong> 주거비는 시장 임대료를 1년 이상
+        시차를 두고 반영합니다. 그래서 주거비까지 덜어낸 이 지표가 물가의 방향 전환을
+        헤드라인이나 일반 Core보다 먼저 보여주는 경우가 많아 헤드라인 자리에 두었습니다.
+        Trimmed Mean PCE는 바로 아래 첫 번째 타일에 있고, 연준의 2% 목표가 기준으로 삼는 것은
+        <strong>PCE</strong>라는 점은 따로 기억해 두시기 바랍니다.
+      </li>
+      <li data-i18n="noteNber">
+        <strong>경기침체 구간은 사후에 확정된 것입니다.</strong> NBER 경기순환일자결정위원회는
+        정점·저점을 <strong>한참 지난 뒤에</strong> 발표합니다 — 2007년 12월 정점은 2008년 12월에,
+        2009년 6월 저점은 2010년 9월에야 공표됐습니다. 하락이 워낙 급격했던 2020년 2월 정점이
+        4개월 만에 나온 게 예외적으로 빠른 축이고, 그 저점(2020년 4월)조차 확정은 2021년
+        7월이었습니다. 위원회가 데이터 개정이 안정될 때까지 일부러 기다리기 때문입니다.
+        그래서 <strong>차트 오른쪽 끝에는 침체 음영이 절대 나타날 수 없습니다</strong> — 지금 침체가
+        진행 중이더라도 아직 판정 전이라 표시되지 않습니다. 이 차트의 마지막 음영은 2020년
+        4월에 끝나고, 그 뒤 75개월은 모두 "침체 아님"으로 채워져 있습니다.
+        음영이 정점 <em>다음 달</em>부터 시작하는 것도 <code>USREC</code>의 정의 때문입니다
+        (정점 다음 달 ~ 저점 달). 2008년 1월부터 칠해진 것은 정점이 2007년 12월이어서입니다.
+      </li>
+      <li data-i18n="notePceCpi">
+        <strong>PCE와 CPI는 같은 물가가 아닙니다.</strong> 가중치 산정 방식(PCE는 기업 매출 기준,
+        CPI는 가계 조사 기준), 포괄 범위(PCE는 고용주가 대신 낸 의료비까지 포함), 주거비 비중
+        (CPI에서 약 3분의 1, PCE에서는 그 절반 수준)이 다릅니다. 그래서 두 지표는 구조적으로
+        벌어지며, 연준의 2% 목표는 <strong>PCE 기준</strong>입니다.
+      </li>
+      <li data-i18n="noteShutdown">
+        <strong>2025년 10월 CPI는 존재하지 않습니다.</strong> 연방정부 셧다운으로 해당 월 조사가
+        이루어지지 않았습니다. 없는 값을 보간하지 않고 선을 끊어 표시했으며, 3·6개월 연율화
+        계산에도 전파됩니다. <strong>단 Sticky 계열은 이 달에도 값이 있고</strong>, PCE 계열은
+        BEA가 별도로 집계하므로 영향을 받지 않습니다.
+      </li>
+      <li data-i18n="noteSa">
+        <strong>계절조정 기준.</strong> PCE 계열은 원자료가 계절조정(SA)뿐이라 전 항목 SA입니다.
+        CPI 계열은 전년 대비를 계절조정 전(NSA)으로, 3·6개월 연율화를 SA로 계산했습니다 —
+        전년 동월 대비는 계절 요인이 자연히 상쇄되지만, 3·6개월 변화는 SA를 써야 계절성을
+        추세로 오독하지 않습니다.
+      </li>
+      <li data-i18n="noteSources">
+        <strong>출처.</strong> Trimmed Mean은 댈러스 연준(<code>PCETRIM12M159SFRBDAL</code>,
+        <code>PCETRIM1M158SFRBDAL</code>, <code>PCETRIM6M680SFRBDAL</code>), 헤드라인·Core PCE는
+        BEA 물가지수(<code>PCEPI</code>, <code>PCEPILFE</code>)를 FRED에서 받아 변화율로 계산했습니다.
+        CPI 4종은 노동통계국 Public Data API(<code>CUUR0000SA0L12E</code> 외)에서 직접 받았고,
+        FRED에는 "less food, shelter, and energy" 계열이 없어 BLS가 유일한 출처입니다. 애틀랜타 연준
+        계열은 <code>CORESTICKM159SFRBATL</code>(Core Sticky), <code>STICKCPIM159SFRBATL</code>(Sticky),
+        <code>CRESTKCPIXSLTRM159SFRBATL</code>(Core Sticky ex-주거비 — 이름 그대로
+        식료품·에너지·주거비를 모두 제외한 것입니다), <code>FLEXCPIM159SFRBATL</code>(Flexible)
+        이고, 경기침체 구간은 <code>USREC</code>입니다.
+      </li>
+      <li id="generated-note"></li>
+    </ul>
+  </section>
+
+</div>
+
+<script src="i18n.js"></script>
+<script src="data.js"></script>
+<script src="app.js"></script>
+</body>
+</html>

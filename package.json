@@ -1,0 +1,15 @@
+{
+  "name": "us-underlying-inflation",
+  "version": "1.0.0",
+  "private": true,
+  "description": "US underlying inflation dashboard — trimmed mean PCE, core CPI ex-shelter, Atlanta Fed sticky/flexible, plus the Dallas Fed component distribution rebuilt from BEA",
+  "type": "module",
+  "scripts": {
+    "fetch": "node scripts/fetch-data.mjs",
+    "distribution": "node scripts/build-distribution.mjs",
+    "verify": "node scripts/build-distribution.mjs --verify",
+    "selftest": "node scripts/selftest.mjs",
+    "start": "node scripts/serve.mjs",
+    "build": "npm run distribution && npm run fetch"
+  }
+}
