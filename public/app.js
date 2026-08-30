@@ -941,21 +941,40 @@
       }));
     }
 
-    const lastI = (() => {
-      for (let i = end - 1; i >= start; i--) if (dist.above3[i] != null) return i;
+    /* One end marker per line. Both used to sit on the raw value in primary ink, which
+       read as the thick line's endpoint — and once the smoothing became trailing, the
+       thick line reached the last month too, so the marker floated several points above
+       where that line actually ended and looked like a jump. The raw end now wears the
+       thin line's weight and the smoothed end wears the thick one's. */
+    const lastOf = (arr) => {
+      for (let i = end - 1; i >= start; i--) if (arr[i] != null) return i;
       return -1;
-    })();
-    if (lastI >= 0) {
+    };
+    const ends = [
+      { i: lastOf(dist.above3), get: (i) => dist.above3[i], strong: false },
+      { i: lastOf(dist.smooth), get: (i) => dist.smooth[i], strong: true },
+    ].filter((e) => e.i >= 0).map((e) => ({ ...e, v: e.get(e.i), y: Y(e.get(e.i)) }));
+
+    // Step apart when the two land on top of each other, the way drawLines does.
+    ends.sort((a, b) => a.y - b.y);
+    if (ends.length === 2 && ends[1].y - ends[0].y < 15) ends[1].y = ends[0].y + 15;
+
+    for (const e of ends) {
+      const anchorY = Y(e.v);
       svg.appendChild(el('circle', {
-        cx: X(lastI), cy: Y(dist.above3[lastI]), r: 4.5,
+        cx: X(e.i), cy: anchorY, r: e.strong ? 4.5 : 3,
         fill: ink.primary, stroke: ink.surface, 'stroke-width': 2,
+        opacity: e.strong ? 1 : 0.55,
       }));
       const t = el('text', {
-        x: X(lastI) + 9, y: Y(dist.above3[lastI]) + 4, fill: ink.primary,
-        'font-size': 12, 'font-weight': 600, 'font-family': 'inherit',
+        x: X(e.i) + 9, y: e.y + 4,
+        fill: e.strong ? ink.primary : ink.secondary,
+        'font-size': e.strong ? 12 : 11,
+        'font-weight': e.strong ? 600 : 400,
+        'font-family': 'inherit',
         style: 'font-variant-numeric:tabular-nums',
       });
-      t.textContent = dist.above3[lastI].toFixed(1);
+      t.textContent = e.v.toFixed(1);
       svg.appendChild(t);
     }
   }
