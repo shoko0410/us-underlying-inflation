@@ -190,16 +190,16 @@
       for (const b of BANDS) bands[b.key][i] = D.distribution.bands[b.key]?.[k] ?? null;
       above3[i] = D.distribution.above3[k];
     }
-    /* Six-month TRAILING mean of the share above 3%.
+    /* Three-month TRAILING mean of the share above 3%.
        A centred window was the first attempt and it read as a laggy signal — not
-       because it turned late (centring costs no lead time) but because it needs six
-       months on the far side, so the line stopped half a year short of the right edge,
-       exactly where the eye goes. Trailing draws to the last month and never revises.
-       Six rather than twelve: on this series twelve flattens the shape to a
-       standard deviation of 1.0pp against six's 2.0pp, and pushes the 2021-22 peak six
-       months late. Six is also the window the Dallas Fed itself publishes the trimmed
-       mean over, so it is the natural horizon for this data. */
-    const SMOOTH_MONTHS = 6;
+       because it turned late (centring costs no lead time) but because it needs months
+       on the far side, so the line stopped half a year short of the right edge, exactly
+       where the eye goes. Trailing draws to the last month and never revises.
+       Three rather than twelve: twelve flattens this series to a standard deviation of
+       1.0pp and pushes the 2021-22 peak six months out. Three keeps 3.7pp of shape and
+       turns with the data, which is the horizon monthly inflation is usually read over
+       anyway. The raw monthly line stays underneath it at 10.7pp. */
+    const SMOOTH_MONTHS = 3;
     const smooth = new Array(n).fill(null);
     for (let i = SMOOTH_MONTHS - 1; i < n; i++) {
       let sum = 0;
