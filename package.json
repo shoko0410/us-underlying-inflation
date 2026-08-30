@@ -10,6 +10,7 @@
     "verify": "node scripts/build-distribution.mjs --verify",
     "selftest": "node scripts/selftest.mjs",
     "start": "node scripts/serve.mjs",
-    "build": "npm run distribution && npm run fetch"
+    "build": "npm run distribution && npm run fetch",
+    "ism": "node scripts/build-ism.mjs"
   }
 }

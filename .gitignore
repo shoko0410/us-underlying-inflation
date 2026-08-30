@@ -6,3 +6,10 @@ data/.cache/
 
 # Browser-automation scratch output.
 .playwright-mcp/
+
+# ISM (NAPM) is licensed data. The historical half comes from the St. Louis Fed's
+# FRED-MD vintages and the recent half from a third-party aggregator, and this site is
+# published publicly — so the series stays local and is never committed. The page loads
+# it only if the file happens to be there.
+data/ism.json
+public/ism.js

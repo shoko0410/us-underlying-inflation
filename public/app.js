@@ -156,6 +156,7 @@
         'stickyExShelter', 'flexCpi']),
       mom: new Set(['coreAnn3m', 'stickyAnn3m']),
       breadth: new Set(),
+      ism: new Set(),
     },
     tableOpen: false,
   };
@@ -229,6 +230,36 @@
 
     return { bands, above3, smooth, breadth, meta: D.distribution };
   })();
+
+  /* ISM, when the local build has produced it. Licensed data, so public/ism.js is
+     gitignored and simply absent on the published site — window.ISM_DATA is undefined
+     there and the card never appears. Projected onto the shared month axis so the one
+     range filter drives it too; its own scale lives on its own card, because a
+     diffusion index around 50 and an inflation rate in percent cannot share a y axis
+     without one of them being squashed flat. */
+  const ism = (() => {
+    const D2 = window.ISM_DATA;
+    if (!D2 || !D2.months?.length) return null;
+    const idx = new Map(D.months.map((m, i) => [m, i]));
+    const n = D.months.length;
+    const pmi = new Array(n).fill(null);
+    const prices = new Array(n).fill(null);
+    let mapped = 0;
+    for (let k = 0; k < D2.months.length; k++) {
+      const i = idx.get(D2.months[k]);
+      if (i == null) continue; // ISM starts in 1948, this page's axis in 1959
+      pmi[i] = D2.pmi[k];
+      prices[i] = D2.prices?.[k] ?? null;
+      if (pmi[i] != null) mapped++;
+    }
+    return mapped ? { pmi, prices, meta: D2 } : null;
+  })();
+
+  const ISM_SERIES = ism ? [
+    { key: 'pmi', name: U.ism.pmi, varName: '--cat-1', values: ism.pmi },
+    ism.prices.some((v) => v != null) &&
+      { key: 'prices', name: U.ism.prices, varName: '--cat-2', values: ism.prices },
+  ].filter(Boolean) : null;
 
   const BREADTH_SERIES = dist?.breadth ? [
     { key: 'weighted', name: U.breadth.weighted, varName: '--cat-1',
@@ -409,7 +440,7 @@
           fill: ink.muted, 'font-size': 11.5, 'font-family': 'inherit',
           style: 'font-variant-numeric:tabular-nums',
         });
-        lbl.textContent = t + '%';
+        lbl.textContent = t + (spec.unit ?? '%');
         svg.appendChild(lbl);
       }
 
@@ -465,7 +496,7 @@
           x: M.left + 8, y: Y(spec.target) - 7, fill: ink.secondary,
           'font-size': 11, 'font-family': 'inherit',
         });
-        t.textContent = narrow ? U.targetShort : spec.targetLabel;
+        t.textContent = narrow ? (spec.targetShort ?? U.targetShort) : spec.targetLabel;
         svg.appendChild(t);
         const b = t.getBBox();
         svg.insertBefore(el('rect', {
@@ -500,7 +531,7 @@
       dateEl.textContent = monthLabel(month);
       tip.appendChild(dateEl);
 
-      spec.tip({ i, x, tip, geom, div });
+      spec.tip({ i, x, tip, geom, div, fmt: spec.fmt ?? pct });
 
       tip.dataset.show = 'true';
       const tw = tip.offsetWidth || 180;
@@ -612,7 +643,7 @@
   }
 
   function lineTip(ctx) {
-    const { i, x, tip, geom, div: mkDiv } = ctx;
+    const { i, x, tip, geom, div: mkDiv, fmt } = ctx;
     let any = false;
     for (const s of geom.shown) {
       const v = s.values[i];
@@ -620,7 +651,7 @@
       const key = mkDiv('tip-key');
       key.style.background = cssVar(s.varName);
       const val = mkDiv('tip-val');
-      val.textContent = pct(v);
+      val.textContent = fmt(v);
       const name = mkDiv('tip-name');
       name.textContent = s.name;
       row.append(key, val, name);
@@ -835,6 +866,46 @@
     }));
   }
 
+  if (ISM_SERIES) {
+    document.getElementById('card-ism').hidden = false;
+    {
+      const m = ism.meta;
+      // Stale once the series ends well before the rest of the page does — that is the
+      // licensing gap, not a bug, so the card says so rather than just trailing off.
+      const stale = m.lastMonth < D.months[D.months.length - 7];
+      document.getElementById('ism-coverage').textContent =
+        U.ismCoverage(m.firstMonth, m.lastMonth, stale);
+    }
+    charts.push(createChart(document.getElementById('chart-ism'), {
+      group: 'ism', series: ISM_SERIES, ratio: 0.26, minH: 220, maxH: 400,
+      // A diffusion index is an index, not a percentage.
+      unit: '', fmt: (v) => (v == null ? '—' : v.toFixed(1)),
+      // 50 is the line between expansion and contraction, so it is the baseline here
+      // the way 2% is on the inflation charts.
+      target: 50, targetLabel: U.ismTarget, targetShort: '50',
+      // A diffusion index has no meaningful zero, so the inflation domain helper (which
+      // always reaches down to 0) would waste half the plot. Round out to tens instead.
+      domain: () => {
+        let lo = Infinity, hi = -Infinity;
+        const shown = ISM_SERIES.filter((x) => !state.hidden.ism.has(x.key));
+        for (const ser of shown) {
+          for (const v of ser.values) {
+            if (v == null) continue;
+            if (v < lo) lo = v;
+            if (v > hi) hi = v;
+          }
+        }
+        if (!Number.isFinite(lo)) { lo = 30; hi = 70; }
+        const min = Math.floor((lo - 2) / 10) * 10;
+        const max = Math.ceil((hi + 2) / 10) * 10;
+        const ticks = [];
+        for (let v = min; v <= max; v += 10) ticks.push(v);
+        return { min, max, ticks };
+      },
+      draw: drawLines, tip: lineTip,
+    }));
+  }
+
   if (BREADTH_SERIES) {
     document.getElementById('card-breadth').hidden = false;
     charts.push(createChart(document.getElementById('chart-breadth'), {
@@ -1038,6 +1109,9 @@
     buildLegend(document.getElementById('legend-mom'), MOM_SERIES, 'mom', renderAll);
     if (BREADTH_SERIES) {
       buildLegend(document.getElementById('legend-breadth'), BREADTH_SERIES, 'breadth', renderAll);
+    }
+    if (ISM_SERIES) {
+      buildLegend(document.getElementById('legend-ism'), ISM_SERIES, 'ism', renderAll);
     }
     if (dist) {
       buildStaticLegend(document.getElementById('legend-dist'),

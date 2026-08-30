@@ -74,6 +74,12 @@ window.I18N = {
         '<strong>비가중</strong>은 항목 수로만 센 것입니다. 가중이 비가중보다 높으면 ' +
         '<strong>지출이 큰 항목일수록 많이 오르고 있다</strong>는 뜻입니다.',
 
+      ismTitle: 'ISM 제조업 PMI',
+      ismSub:
+        '구매관리자들에게 신규주문·생산·고용·납기·재고를 묻고 "좋아졌다"에서 "나빠졌다"를 뺀 ' +
+        '확산지수입니다. <strong>50이 확장과 수축의 경계</strong>입니다. 물가지수(%)와 단위가 ' +
+        '달라 같은 축에 못 얹으므로 축을 따로 두되 <strong>x축과 기간 필터는 공유</strong>합니다 — ' +
+        '위아래로 같은 시점을 수직으로 맞춰 읽으시면 됩니다.',
       tableTitle: '데이터 테이블',
       tableSub: '차트의 모든 값을 숫자로 확인할 수 있습니다. 최근 데이터가 위쪽입니다.',
 
@@ -161,6 +167,7 @@ window.I18N = {
       chartYoy: 'Trimmed Mean PCE, Core·헤드라인 PCE, CPI 계열 4종, 애틀랜타 연준 Sticky·Flexible의 전년 대비 상승률 추이 선그래프',
       chartMom: 'Trimmed Mean과 Core PCE의 연율화 상승률 추이 선그래프',
       chartDist: 'PCE 구성품목의 연율화 가격 변화 구간별 지출가중 비중 누적 막대그래프',
+      chartIsm: 'ISM 제조업 PMI와 물가지불 지수 추이 선그래프',
       chartBreadth: '전년 대비 3%를 넘게 오른 PCE 항목의 가중 비중과 비가중 비중 추이 선그래프',
       themeToDark: '다크 모드로 전환',
       themeToLight: '라이트 모드로 전환',
@@ -208,6 +215,15 @@ window.I18N = {
       },
       breadth: { weighted: '가중 (소비지출 비중)', unweighted: '비가중 (항목 수)' },
 
+      ism: { pmi: 'ISM 제조업 PMI', prices: 'ISM 물가지불' },
+      ismTarget: '확장/수축 경계 50',
+      ismCoverage: (first, last, stale) =>
+        `수록 ${first} ~ ${last}.` + (stale
+          ? ' ISM은 라이선스 데이터라 FRED에서 내려갔고, 무료로 확인 가능한 공식 소스' +
+            '(세인트루이스 연준 FRED-MD 2016-05 빈티지, forecasts.org)가 여기서 끝납니다. ' +
+            '이후 구간은 data/ism-recent.csv 에 month,pmi 두 열로 채우면 이어집니다. ' +
+            '이 계열은 저장소에 커밋되지 않으며 공개 사이트에는 나타나지 않습니다.'
+          : ' 이 계열은 저장소에 커밋되지 않으며 공개 사이트에는 나타나지 않습니다.'),
       above3Raw: '3% 초과 비중 (월별)',
       above3Smooth: '3% 초과 비중 (3개월 평균)',
       above3Total: '3% 초과 합계',
@@ -319,6 +335,12 @@ window.I18N = {
         '<strong>非加重</strong>は品目数だけで数えたものです。加重が非加重より高ければ' +
         '<strong>支出の大きい品目ほどよく上がっている</strong>ということになります。',
 
+      ismTitle: 'ISM 製造業PMI',
+      ismSub:
+        '購買担当者に新規受注・生産・雇用・納期・在庫を尋ね、「良くなった」から「悪くなった」を' +
+        '引いた拡散指数です。<strong>50が拡大と縮小の境目</strong>です。物価指数（%）とは単位が' +
+        '違って同じ軸に載せられないため、軸は別にしつつ<strong>x軸と期間フィルターは共有</strong>' +
+        'しています — 上下で同じ時点を垂直に合わせて読んでください。',
       tableTitle: 'データテーブル',
       tableSub: 'グラフのすべての値を数値で確認できます。新しいデータが上です。',
 
@@ -408,6 +430,7 @@ window.I18N = {
       chartYoy: 'Trimmed Mean PCE、Core・Headline PCE、CPI4種、アトランタ連銀の Sticky・Flexible の前年比上昇率の推移を示す折れ線グラフ',
       chartMom: 'Trimmed Mean と Core PCE の年率換算上昇率の推移を示す折れ線グラフ',
       chartDist: 'PCE構成品目の年率換算した価格変化の区間別支出加重割合を示す積み上げ棒グラフ',
+      chartIsm: 'ISM製造業PMIと価格支払指数の推移を示す折れ線グラフ',
       chartBreadth: '前年比で3%超上昇したPCE品目の加重割合と非加重割合の推移を示す折れ線グラフ',
       themeToDark: 'ダークモードに切り替え',
       themeToLight: 'ライトモードに切り替え',
@@ -455,6 +478,15 @@ window.I18N = {
       },
       breadth: { weighted: '加重（消費支出ウェイト）', unweighted: '非加重（品目数）' },
 
+      ism: { pmi: 'ISM 製造業PMI', prices: 'ISM 価格支払' },
+      ismTarget: '拡大／縮小の境目 50',
+      ismCoverage: (first, last, stale) =>
+        `収録 ${first} 〜 ${last}。` + (stale
+          ? ' ISMはライセンスデータのためFREDから削除されており、無料で確認できる公式ソース' +
+            '（セントルイス連銀 FRED-MD の2016-05ヴィンテージ、forecasts.org）はここで終わります。' +
+            'それ以降は data/ism-recent.csv に month,pmi の2列で追記すればつながります。' +
+            'この系列はリポジトリにコミットされず、公開サイトには表示されません。'
+          : ' この系列はリポジトリにコミットされず、公開サイトには表示されません。'),
       above3Raw: '3%超の割合（月次）',
       above3Smooth: '3%超の割合（3か月平均）',
       above3Total: '3%超 合計',

@@ -14,6 +14,7 @@ BEA 원자료에서 1977년까지 직접 복원해 함께 보여줍니다.
 
 ```bash
 npm run selftest       # 산술 검증 (BEA 키 불필요)
+npm run ism            # (선택·로컬 전용) ISM 제조업 PMI → data/ism.json
 npm run distribution   # BEA 원데이터에서 품목별 분포를 복원 → data/distribution.json
 npm run fetch          # FRED/BLS에서 시계열을 받아 public/data.js 생성
 npm start              # http://localhost:5173
@@ -123,6 +124,44 @@ $ npm run selftest
 ```json
 { "byName": { "Fruit (fresh)": 54 } }
 ```
+
+## ISM 제조업 PMI (로컬 전용)
+
+`npm run ism` 을 돌리면 ISM 카드가 하나 더 생깁니다. **이 계열만은 저장소에 커밋되지 않고
+공개 사이트에도 나타나지 않습니다** — `data/ism.json` 과 `public/ism.js` 가 gitignore 대상이고,
+`index.html` 은 파일이 있을 때만 카드를 띄웁니다.
+
+이유는 라이선스입니다. ISM이 데이터를 유료로 라이선스하기 때문에 FRED에서 `NAPM` 계열이
+내려갔고, 그래서 무료로 받을 수 있는 건 과거분뿐입니다.
+
+| 구간 | 출처 | 상태 |
+|---|---|---|
+| 1948-01 ~ 2014-08 | [forecasts.org](https://www.forecasts.org/data/data/NAPM.htm) | 페이지에 전체 시리즈가 들어 있음 |
+| 1959-01 ~ 2016-04 | 세인트루이스 연준 **FRED-MD 2016-05 빈티지** | `NAPM` 이 살아있는 마지막 빈티지 |
+| 2016-05 ~ | — | **무료·정확한 소스 없음** |
+
+두 소스는 668개월 겹치고 평균 오차 **0.040**(최대 1.60)으로 일치합니다. 빌드할 때마다 이
+대조를 돌리고 평균 오차가 0.25를 넘으면 실패시킵니다.
+
+찾아본 최신분 후보들: DBnomics(`ISM/pmi/pm`)는 2020-05부터인 데다 2025년 말 값이 PMI 10~11로
+깨져 있고(역대 최저가 29.4입니다), MacroMicro는 내보내기가 유료 플랜, Trendonify는 존재하지
+않았습니다. 그래서 스크립트는 **직접 채워 넣을 자리**를 둡니다:
+
+```
+data/ism-recent.csv
+month,pmi
+2016-05,51.3
+2016-06,53.2
+```
+
+이 파일 값이 두 소스보다 우선합니다.
+
+### 준비물
+
+FRED-MD 빈티지 묶음이 필요한데, 세인트루이스 연준이 명령줄 다운로드를 차단합니다.
+[FRED-MD 페이지](https://www.stlouisfed.org/research/economists/mccracken/fred-databases)에서
+**Historical Vintages of FRED-MD 2015-01 to 2025-12 (.zip)** 을 브라우저로 받아
+`data/.cache/fredmd-vintages.zip` 으로 저장하세요 (34.6MB).
 
 ## 자동 갱신
 

@@ -116,6 +116,22 @@
          data-aria="chartBreadth" aria-label="전년 대비 3%를 넘게 오른 PCE 항목의 가중 비중과 비가중 비중 추이 선그래프"></div>
   </section>
 
+
+  <section class="card" id="card-ism" hidden>
+    <div class="card-head">
+      <h2 data-i18n="ismTitle">ISM 제조업 PMI</h2>
+      <p class="card-sub" data-i18n="ismSub">
+        구매관리자들에게 신규주문·생산·고용·납기·재고를 묻고 "좋아졌다"에서 "나빠졌다"를 뺀
+        확산지수입니다. <strong>50이 확장과 수축의 경계</strong>입니다. 물가지수(%)와 단위가
+        달라 같은 축에 못 얹으므로 축을 따로 두되 <strong>x축과 기간 필터는 공유</strong>합니다 —
+        위아래로 같은 시점을 수직으로 맞춰 읽으시면 됩니다.
+      </p>
+    </div>
+    <p class="card-sub" id="ism-coverage"></p>
+    <div class="legend" id="legend-ism" role="group" data-aria="legendToggle" aria-label="계열 표시 전환"></div>
+    <div class="chart-host" id="chart-ism" tabindex="0" role="img"
+         data-aria="chartIsm" aria-label="ISM 제조업 PMI와 물가지불 지수 추이 선그래프"></div>
+  </section>
   <section class="card">
     <div class="card-head" style="display:flex;justify-content:space-between;align-items:flex-start;gap:16px;">
       <div>
@@ -224,6 +240,9 @@
 </div>
 
 <script src="i18n.js"></script>
+<!-- Optional and gitignored: present only on a machine that has built it. Absent on
+     the published site, where window.ISM_DATA stays undefined and the card stays hidden. -->
+<script src="ism.js"></script>
 <script src="data.js"></script>
 <script src="app.js"></script>
 </body>
