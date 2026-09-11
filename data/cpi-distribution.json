@@ -2762,11 +2762,11 @@
       "from": 1997
     },
     "firstMonth": "1998-02",
-    "publishedLast": "2026-07",
+    "publishedLast": "2026-08",
     "oerShares": {
       "South": 0.35114503816793896,
-      "Midwest": 0.17938931297709929,
       "Northeast": 0.19847328244274812,
+      "Midwest": 0.17938931297709929,
       "West": 0.27099236641221375
     }
   },
@@ -2782,17 +2782,17 @@
     "unadjustedComponents": [
       "Motor vehicle fees",
       "Tenants' and household insurance",
-      "Personal care services",
       "South:Owners' equivalent rent of residences",
-      "Midwest: Owners' equivalent rent of residences",
       "Northeast: Owners' equivalent rent of residences",
-      "West: Owners' equivalent rent of residences"
+      "Midwest: Owners' equivalent rent of residences",
+      "West: Owners' equivalent rent of residences",
+      "Personal care services"
     ]
   },
   "validation": {
     "componentsMatched": 45,
-    "componentMeanDev": 0.07,
-    "componentMaxDev": 1.61,
+    "componentMeanDev": 0.06,
+    "componentMaxDev": 0.89,
     "medianMeanDev": 0.22,
     "medianMaxDev": 1.32,
     "trimMeanDev": 0.34,
