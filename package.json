@@ -7,10 +7,12 @@
   "scripts": {
     "fetch": "node scripts/fetch-data.mjs",
     "distribution": "node scripts/build-distribution.mjs",
+    "cpi-distribution": "node scripts/build-cpi-distribution.mjs",
     "verify": "node scripts/build-distribution.mjs --verify",
+    "verify-cpi": "node scripts/build-cpi-distribution.mjs --verify",
     "selftest": "node scripts/selftest.mjs",
     "start": "node scripts/serve.mjs",
-    "build": "npm run distribution && npm run fetch",
+    "build": "npm run distribution && npm run cpi-distribution && npm run fetch",
     "ism": "node scripts/build-ism.mjs"
   }
 }

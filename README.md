@@ -221,10 +221,12 @@ FRED에는 "less food, shelter, and energy" 계열이 없어서 그 지표는 BL
 ```
 scripts/fetch-data.mjs          FRED + BLS  → data/pce.json, public/data.js
 scripts/build-distribution.mjs  BEA         → data/distribution.json  (+ 3단계 검증)
+scripts/build-cpi-distribution.mjs  BLS     → data/cpi-distribution.json (+ 3단계 검증)
 scripts/selftest.mjs            산술 검증 (BEA 불필요)
 scripts/serve.mjs               정적 서버
 lib/trimmed-mean.mjs            절사·버킷 산술 (WP 0506 / tmrates.txt 이식)
 lib/dallasfed.mjs               연준 워크북 2종 + 캐시 + 이름 정규화
+lib/cleveland.mjs               클리브랜드 45품목 · BLS 매핑 · 상대중요도 파싱
 lib/xlsx.mjs                    무의존성 xlsx 리더 (node:zlib 만 사용)
 lib/dallasfed-components.json   tech.pdf 178개 목록 (폴백 전용)
 lib/bea-mapping.json            (선택) 매핑 수동 보정
@@ -247,14 +249,45 @@ public/                         index.html · app.js · styles.css · i18n.js ·
 
 ## 차트 구성
 
-카드 4장입니다.
+카드 5장입니다(ISM 카드는 로컬 전용).
 
-1. **전년 대비 (YoY)** — 계열 11종을 한 축에서 비교. PCE 3종(Trimmed Mean · Core · 헤드라인),
-   CPI 4종(Core ex-주거비 · Core · 헤드라인 · 주거비), 애틀랜타 연준 4종(Core Sticky ·
-   Sticky · Core Sticky ex-주거비 · Flexible). 기본은 5개만 켜져 있고 범례로 토글합니다.
+1. **전년 대비 (YoY)** — 계열 11종을 한 축에서 비교
 2. **단기 모멘텀** — Trimmed 1·6개월 연율, Core PCE 3·6개월 연율, Sticky 3개월 연율
-3. **품목별 가격 변화 분포** — 6구간 누적 + 3% 초과 비중(월별·12개월 평균)
-4. **물가 상승의 확산 정도** — 전년 대비 3% 초과 항목의 가중·비가중 비중
+3. **품목별 가격 변화 분포 (PCE)** — 6구간 누적 + 3% 초과 비중
+4. **품목별 가격 변화 분포 (CPI)** — 같은 구간·같은 축으로 다시 그린 것
+5. **물가 상승의 확산 정도** — 전년 대비 3% 초과 항목의 가중·비가중 비중
+
+3번과 4번은 **구간 경계와 0–100 축이 같아** 위아래로 겹쳐 읽을 수 있습니다. 두 지표는 가중치와
+포괄범위가 다르고 CPI의 주거비 비중이 약 두 배라 같은 달에도 분포가 꽤 다릅니다 — 2022년 6월
+정점에서 3% 초과 비중이 CPI 92.8%, PCE 71.3%였습니다.
+
+### CPI 분포는 어떻게 복원했나
+
+클리브랜드 연준이 CPI 쪽에서 댈러스 연준과 같은 위치에 있습니다 — **중앙값 CPI와 16% 절사평균**은
+공개하지만 그 뒤의 분포는 안 냅니다(당월 품목표 한 장이 전부). 그래서 `scripts/build-cpi-distribution.mjs`
+가 연준이 쓰는 것과 같은 재료로 다시 계산합니다.
+
+- **품목**: 연준이 쓰는 45개. 자가주거비를 **4개 지역으로 쪼개는** 것이 특징인데, 장식이 아닙니다 —
+  OER이 바구니의 1/4이고 지역별로 다른 구간에 들어가기 때문에(2026년 7월: 남부 2.1%, 서부 4.7%)
+  하나로 묶으면 1/4의 가중치가 한 구간에 몰려 분포를 왜곡합니다.
+- **가격**: BLS 품목별 CPI, 계절조정판이 있는 것은 그것으로.
+- **가중치**: BLS 상대중요도(relative importance), 연 단위.
+
+```
+$ npm run verify-cpi
+check 1  당월 품목표 대조      평균 0.07%p · 최대 1.61%p (45개 품목)
+check 2  중앙값 역산 대조      평균 0.22%p · 최대 1.32%p (340개월)
+check 3  16% 절사평균 대조     평균 0.34%p · 최대 2.11%p
+```
+
+**연준과 정확히 같을 수 없는 두 곳**이 있고 숨기지 않았습니다. 지역별 OER은 계절조정 계열이
+공표되지 않아 원계열을 썼고(그 4개 품목에서 0.2~0.6%p), 상대중요도도 전국 단위만 나와 지역
+가중치는 전국 값을 연준 표의 현재 비율로 나눴습니다. 1997년 이전은 품목코드 체계가 달라 제외해
+수록 범위가 1998-02부터입니다.
+
+검증 2·3은 PCE판의 절사평균 검증(583개월 오차 0%p)보다 무딘 시험입니다. 45개 품목 위에서
+중앙값은 계단함수라 순서가 한 칸만 바뀌어도 답이 한 단계 움직입니다 — **"입력이 맞다"는 증거이지
+"똑같다"는 뜻이 아니며**, 실제로 그리는 구간 비중은 중앙값보다 훨씬 덜 민감합니다.
 
 ### 11색 팔레트
 

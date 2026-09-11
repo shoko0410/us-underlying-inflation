@@ -178,18 +178,18 @@
 
   /* Distribution arrives on its own month list; project it onto the shared axis so the
      one range filter drives every chart on the page. */
-  const dist = (() => {
-    if (!D.distribution || !D.distribution.months?.length) return null;
+  const projectDist = (src) => {
+    if (!src || !src.months?.length) return null;
     const idx = new Map(D.months.map((m, i) => [m, i]));
     const n = D.months.length;
     const bands = {};
     for (const b of BANDS) bands[b.key] = new Array(n).fill(null);
     const above3 = new Array(n).fill(null);
-    for (let k = 0; k < D.distribution.months.length; k++) {
-      const i = idx.get(D.distribution.months[k]);
+    for (let k = 0; k < src.months.length; k++) {
+      const i = idx.get(src.months[k]);
       if (i == null) continue;
-      for (const b of BANDS) bands[b.key][i] = D.distribution.bands[b.key]?.[k] ?? null;
-      above3[i] = D.distribution.above3[k];
+      for (const b of BANDS) bands[b.key][i] = src.bands[b.key]?.[k] ?? null;
+      above3[i] = src.above3[k];
     }
     /* Three-month TRAILING mean of the share above 3%.
        A centred window was the first attempt and it read as a laggy signal — not
@@ -212,23 +212,33 @@
       }
       if (got === SMOOTH_MONTHS) smooth[i] = Math.round((sum / SMOOTH_MONTHS) * 100) / 100;
     }
-    // The breadth lines ride the same axis. They are a different measure from the
-    // bands above them — 12-month change, not annualised 1-month — so they get their
-    // own card rather than being drawn over the distribution.
-    let breadth = null;
-    if (D.distribution.breadth) {
-      const w = new Array(n).fill(null);
-      const u = new Array(n).fill(null);
-      for (let k = 0; k < D.distribution.months.length; k++) {
-        const i = idx.get(D.distribution.months[k]);
-        if (i == null) continue;
-        w[i] = D.distribution.breadth.weighted[k];
-        u[i] = D.distribution.breadth.unweighted[k];
-      }
-      breadth = { weighted: w, unweighted: u, threshold: D.distribution.breadth.threshold };
-    }
+    return { bands, above3, smooth, meta: src };
+  };
 
-    return { bands, above3, smooth, breadth, meta: D.distribution };
+  /* Two distributions, same shape: PCE from BEA underlying detail, CPI from BLS item
+     data. They are not two views of one thing — different weights, different coverage,
+     and CPI carries about twice the shelter share — so each gets its own card and the
+     buckets are identical so the two can be read against each other. */
+  const dist = projectDist(D.distribution);
+  const distCpi = projectDist(D.cpiDistribution);
+
+  /* The breadth lines ride the same axis but measure something else — a 12-month change,
+     not an annualised 1-month one — so they get their own card rather than being drawn
+     over the distribution. Only PCE publishes what they need. */
+  const breadth = (() => {
+    const src = D.distribution;
+    if (!src?.breadth) return null;
+    const idx = new Map(D.months.map((m, i) => [m, i]));
+    const n = D.months.length;
+    const w = new Array(n).fill(null);
+    const u = new Array(n).fill(null);
+    for (let k = 0; k < src.months.length; k++) {
+      const i = idx.get(src.months[k]);
+      if (i == null) continue;
+      w[i] = src.breadth.weighted[k];
+      u[i] = src.breadth.unweighted[k];
+    }
+    return { weighted: w, unweighted: u, threshold: src.breadth.threshold };
   })();
 
   /* ISM, when the local build has produced it. Licensed data, so public/ism.js is
@@ -261,11 +271,11 @@
       { key: 'prices', name: U.ism.prices, varName: '--cat-2', values: ism.prices },
   ].filter(Boolean) : null;
 
-  const BREADTH_SERIES = dist?.breadth ? [
+  const BREADTH_SERIES = breadth ? [
     { key: 'weighted', name: U.breadth.weighted, varName: '--cat-1',
-      values: dist.breadth.weighted },
+      values: breadth.weighted },
     { key: 'unweighted', name: U.breadth.unweighted, varName: '--cat-2',
-      values: dist.breadth.unweighted },
+      values: breadth.unweighted },
   ] : null;
 
   // ------------------------------------------------------------ scales
@@ -750,7 +760,8 @@
       { k: 'headlinePce', ...lastValue(D.series.headlinePce.yoy, last) },
       D.series.coreSticky && { k: 'coreSticky', ...lastValue(D.series.coreSticky.yoy, last) },
       dist && { k: 'above3m1', ...lastValue(dist.above3, last) },
-      dist?.breadth && { k: 'above3yoy', ...lastValue(dist.breadth.weighted, last) },
+      distCpi && { k: 'above3cpi', ...lastValue(distCpi.above3, last) },
+      breadth && { k: 'above3yoy', ...lastValue(breadth.weighted, last) },
     ].filter(Boolean);
     const host = document.getElementById('tiles');
     host.replaceChildren();
@@ -790,8 +801,9 @@
       { h: C.tmAnn6m, ann: true, get: (i) => D.series.trimmedMean.ann6m[i] },
       { h: C.coreAnn6m, ann: true, get: (i) => D.series.corePce.ann6m[i] },
       dist && { h: C.above3m1, ann: true, get: (i) => dist.above3[i] },
-      dist?.breadth && { h: C.bWeighted, ann: true, get: (i) => dist.breadth.weighted[i] },
-      dist?.breadth && { h: C.bUnweighted, ann: true, get: (i) => dist.breadth.unweighted[i] },
+      distCpi && { h: C.above3cpi, ann: true, get: (i) => distCpi.above3[i] },
+      breadth && { h: C.bWeighted, ann: true, get: (i) => breadth.weighted[i] },
+      breadth && { h: C.bUnweighted, ann: true, get: (i) => breadth.unweighted[i] },
     ].filter(Boolean);
     const yoyCols = cols.filter((c) => !c.ann).length;
 
@@ -851,18 +863,23 @@
     draw: drawLines, tip: lineTip,
   }));
 
-  if (dist) {
-    document.getElementById('card-dist').hidden = false;
-    buildStaticLegend(document.getElementById('legend-dist'),
-      DIST_KEY);
-
-    charts.push(createChart(document.getElementById('chart-dist'), {
-      group: 'dist', series: BANDS.map((b) => ({ ...b, values: dist.bands[b.key] })),
+  /* The two distribution cards are the same chart over different source data, so they
+     are built from one spec. Identical buckets and an identical 0-100 axis are the whole
+     point: it is the difference between the two that carries the information. */
+  for (const d of [
+    { src: dist, card: 'card-dist', legend: 'legend-dist', chart: 'chart-dist', group: 'dist' },
+    { src: distCpi, card: 'card-cpi-dist', legend: 'legend-cpi-dist', chart: 'chart-cpi-dist', group: 'cpiDist' },
+  ]) {
+    if (!d.src) continue;
+    document.getElementById(d.card).hidden = false;
+    buildStaticLegend(document.getElementById(d.legend), DIST_KEY);
+    charts.push(createChart(document.getElementById(d.chart), {
+      group: d.group, series: BANDS.map((b) => ({ ...b, values: d.src.bands[b.key] })),
       ratio: 0.3, minH: 240, maxH: 460,
       // A share-of-total axis is always 0-100; letting it autoscale would make two
-      // range selections silently incomparable.
+      // range selections silently incomparable — and the two cards incomparable too.
       domain: () => ({ min: 0, max: 100, ticks: [0, 25, 50, 75, 100] }),
-      draw: drawStack, tip: stackTip,
+      draw: makeDrawStack(d.src), tip: makeStackTip(d.src),
     }));
   }
 
@@ -920,7 +937,8 @@
   /* Stacked shares. Below ~48 visible months each month gets its own column with a 2px
      surface gap between segments; above that the columns would be sub-pixel, so the
      same stack is drawn as areas with a 1px surface seam doing the separating work. */
-  function drawStack(ctx) {
+  function makeDrawStack(src) {
+    return function drawStack(ctx) {
     const { svg, X, Y, start, end, n, ink } = ctx;
     const asBars = n <= 48;
     const colW = Math.max(1, (ctx.iw / Math.max(n, 1)));
@@ -930,7 +948,7 @@
       let acc = 0;
       const col = {};
       for (const b of BANDS) {
-        const v = dist.bands[b.key][i];
+        const v = src.bands[b.key][i];
         col[b.key] = v == null ? null : [acc, acc + v];
         if (v != null) acc += v;
       }
@@ -952,22 +970,33 @@
           }));
         }
       } else {
-        let up = '', down = '';
-        let open = false;
+        /* One closed polygon per unbroken run of months. Carrying a single top edge and
+           a single bottom edge across a hole would close the shape through the gap and
+           smear a wedge over the whole chart — which is what an unpublished month does
+           here, the CPI having none for October and November 2025. */
+        const runs = [];
+        let run = null;
         for (let i = start; i < end; i++) {
           const seg = tops[i - start][b.key];
-          if (!seg) { open = false; continue; }
-          up += (open ? 'L' : 'M') + X(i).toFixed(1) + ' ' + Y(seg[1]).toFixed(1) + ' ';
-          down = `L${X(i).toFixed(1)} ${Y(seg[0]).toFixed(1)} ` + down;
-          open = true;
+          if (!seg) { run = null; continue; }
+          if (!run) { run = []; runs.push(run); }
+          run.push({ i, top: seg[1], bottom: seg[0] });
         }
-        if (up) {
-          // The 2px surface gap that separates stacked segments needs a segment wide
-          // enough to have an edge. Below ~4px per month it stops separating bands and
-          // starts dithering them, so it comes off.
-          const seam = ctx.iw / Math.max(n, 1) >= 4;
+        // The 2px surface gap that separates stacked segments needs a segment wide
+        // enough to have an edge. Below ~4px per month it stops separating bands and
+        // starts dithering them, so it comes off.
+        const seam = ctx.iw / Math.max(n, 1) >= 4;
+        for (const r of runs) {
+          if (r.length < 2) continue;
+          let d = '';
+          r.forEach((pt, k) => {
+            d += (k ? 'L' : 'M') + X(pt.i).toFixed(1) + ' ' + Y(pt.top).toFixed(1) + ' ';
+          });
+          for (let k = r.length - 1; k >= 0; k--) {
+            d += `L${X(r[k].i).toFixed(1)} ${Y(r[k].bottom).toFixed(1)} `;
+          }
           svg.appendChild(el('path', {
-            d: up + down + 'Z', fill: color,
+            d: d + 'Z', fill: color,
             ...(seam ? { stroke: ink.surface, 'stroke-width': 1, 'stroke-linejoin': 'round' } : {}),
           }));
         }
@@ -991,7 +1020,7 @@
       return d;
     };
 
-    const raw = path((i) => dist.above3[i]);
+    const raw = path((i) => src.above3[i]);
     if (raw) {
       svg.appendChild(el('path', {
         d: raw, fill: 'none', stroke: ink.primary, 'stroke-width': 1,
@@ -999,7 +1028,7 @@
       }));
     }
 
-    const smooth = path((i) => dist.smooth[i]);
+    const smooth = path((i) => src.smooth[i]);
     if (smooth) {
       // A surface underlay keeps the line legible wherever it crosses a dark band.
       svg.appendChild(el('path', {
@@ -1022,8 +1051,8 @@
       return -1;
     };
     const ends = [
-      { i: lastOf(dist.above3), get: (i) => dist.above3[i], strong: false },
-      { i: lastOf(dist.smooth), get: (i) => dist.smooth[i], strong: true },
+      { i: lastOf(src.above3), get: (i) => src.above3[i], strong: false },
+      { i: lastOf(src.smooth), get: (i) => src.smooth[i], strong: true },
     ].filter((e) => e.i >= 0).map((e) => ({ ...e, v: e.get(e.i), y: Y(e.get(e.i)) }));
 
     // Step apart when the two land on top of each other, the way drawLines does.
@@ -1048,13 +1077,15 @@
       t.textContent = e.v.toFixed(1);
       svg.appendChild(t);
     }
+  };
   }
 
-  function stackTip(ctx) {
+  function makeStackTip(src) {
+    return function stackTip(ctx) {
     const { i, tip, div: mkDiv } = ctx;
     let any = false;
     for (const b of BANDS) {
-      const v = dist.bands[b.key][i];
+      const v = src.bands[b.key][i];
       if (v == null) continue;
       any = true;
       const row = mkDiv('tip-row');
@@ -1077,11 +1108,12 @@
     const key = mkDiv('tip-key');
     key.style.background = cssVar('--text-primary');
     const val = mkDiv('tip-val');
-    val.textContent = pct(dist.above3[i]);
+    val.textContent = pct(src.above3[i]);
     const name = mkDiv('tip-name');
     name.textContent = U.above3Total;
     row.append(key, val, name);
     tip.appendChild(row);
+  };
   }
 
   function renderAll() {
@@ -1150,11 +1182,10 @@
   });
   syncThemeBtn();
 
-  if (dist) {
-    document.getElementById('note-dist').append(U.distNote(dist.meta));
-  } else {
-    document.getElementById('note-dist').append(U.distNoteAbsent);
-  }
+  document.getElementById('note-dist').append(
+    dist ? U.distNote(dist.meta) : U.distNoteAbsent);
+  document.getElementById('note-cpi-dist').append(
+    distCpi ? U.cpiDistNote(distCpi.meta) : U.distNoteAbsent);
 
   document.getElementById('generated-note').textContent = U.generated(
     new Date(D.generatedAt).toLocaleString(T.locale), D.months[firstIdx], D.latestMonth);

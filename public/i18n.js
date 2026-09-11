@@ -54,6 +54,14 @@ window.I18N = {
         'Core PCE의 3·6개월 연율은 계절조정 지수에서 계산했습니다. ' +
         'Core Sticky ex-주거비 3개월 연율도 애틀랜타 연준 발표값입니다.',
 
+      cpiDistTitle: '품목별 가격 변화 분포 — CPI',
+      cpiDistSub:
+        '바로 위와 같은 그림을 <strong>CPI로 다시 그린 것</strong>입니다. 구간 경계와 축이 같으니 ' +
+        '위아래를 겹쳐 읽으시면 됩니다. 두 지표는 가중치·포괄범위가 다르고 CPI의 주거비 비중이 ' +
+        '약 두 배라, <strong>같은 달인데도 분포가 꽤 다르게 나옵니다</strong> — 2022년 6월 정점에서 ' +
+        '3% 초과 비중이 CPI는 92.8%, PCE는 71.3%였습니다. 클리브랜드 연준이 중앙값 CPI를 계산할 때 ' +
+        '쓰는 45개 품목 기준이고, 자가주거비를 4개 지역으로 나눠 담는 것이 그 집합의 특징입니다.',
+      cpiDistNoteLead: 'CPI 분포의 출처와 한계.',
       distTitle: '품목별 가격 변화 분포',
       distSub:
         '매달 PCE 구성품목의 연율화 가격 변화를 구간별로 나누고 <strong>지출 비중으로 가중</strong>한 ' +
@@ -167,6 +175,7 @@ window.I18N = {
       chartYoy: 'Trimmed Mean PCE, Core·헤드라인 PCE, CPI 계열 4종, 애틀랜타 연준 Sticky·Flexible의 전년 대비 상승률 추이 선그래프',
       chartMom: 'Trimmed Mean과 Core PCE의 연율화 상승률 추이 선그래프',
       chartDist: 'PCE 구성품목의 연율화 가격 변화 구간별 지출가중 비중 누적 막대그래프',
+      chartCpiDist: 'CPI 구성품목의 연율화 가격 변화 구간별 지출가중 비중 누적 막대그래프',
       chartIsm: 'ISM 제조업 PMI와 물가지불 지수 추이 선그래프',
       chartBreadth: '전년 대비 3%를 넘게 오른 PCE 항목의 가중 비중과 비가중 비중 추이 선그래프',
       themeToDark: '다크 모드로 전환',
@@ -233,7 +242,8 @@ window.I18N = {
         corePce: ['Core PCE', '식료품·에너지 제외'],
         headlinePce: ['헤드라인 PCE', '전년 대비'],
         coreSticky: ['Core Sticky CPI', '애틀랜타 연준'],
-        above3m1: ['3% 초과 · 1개월 연율', '지출가중'],
+        above3m1: ['3% 초과 · PCE', '1개월 연율 · 지출가중'],
+        above3cpi: ['3% 초과 · CPI', '1개월 연율 · 지출가중'],
         above3yoy: ['3% 초과 · 전년 대비', '지출가중'],
       },
 
@@ -249,7 +259,7 @@ window.I18N = {
           shelter: '주거비', stickyExShelter: 'Core Sticky ex-주거비', coreSticky: 'Core Sticky',
           stickyAll: 'Sticky', flexCpi: 'Flexible',
           tmAnn1m: 'TM 1m 연율', tmAnn6m: 'TM 6m 연율', coreAnn6m: 'Core PCE 6m',
-          above3m1: '3% 초과 1m', bWeighted: '3% 초과 YoY 가중', bUnweighted: '3% 초과 YoY 비가중',
+          above3m1: '3% 초과 PCE', above3cpi: '3% 초과 CPI', bWeighted: '3% 초과 YoY 가중', bUnweighted: '3% 초과 YoY 비가중',
         },
         caption: (from, to, n) =>
           `${from} ~ ${to} · 단위 % · 앞 ${n}개 열은 전년 대비, 나머지는 연율화 또는 비중 · 미발표 월은 —`,
@@ -264,6 +274,20 @@ window.I18N = {
             `절사평균을 역산해 공표 시계열과 비교한 평균 오차는 ${m.validation.trimMeanAbsDev}%p입니다.`
           : '.') +
         ' 구간 경계(0·2·3·5·10%)는 연율화 기준이며, 어느 구간에도 들지 않는 나머지가 "하락"입니다.',
+      cpiDistNote: (m) =>
+        '클리브랜드 연준도 중앙값 CPI와 16% 절사평균만 공개하고 그 뒤의 분포는 내놓지 않습니다 ' +
+        '(당월 품목표 한 장이 전부입니다). 그래서 ' + m.months[0] + ' 이후 전 구간을 연준이 쓰는 ' +
+        '것과 같은 재료 — 노동통계국 품목별 CPI와 상대중요도 — 로 다시 계산했습니다' +
+        (m.validation
+          ? ' — 당월 품목표와 대조한 평균 오차는 ' + m.validation.componentMeanDev + '%p, ' +
+            '중앙값을 역산해 공표 시계열과 비교한 평균 오차는 ' + m.validation.medianMeanDev + '%p입니다.'
+          : '.') +
+        ' 두 가지는 연준과 정확히 같을 수 없습니다. 지역별 자가주거비는 계절조정 계열이 공표되지 ' +
+        '않아 원계열을 썼고(그 4개 품목에서 0.2~0.6%p), 상대중요도도 전국 단위만 공표돼 지역 ' +
+        '가중치는 전국 값을 연준 표의 현재 비율로 나눴습니다. 1997년 이전은 품목코드 체계가 달라 ' +
+        '제외했습니다. 중앙값은 45개 품목 위에서 계단함수라 순서가 한 칸만 바뀌어도 답이 한 단계 ' +
+        '움직입니다 — 위 오차는 "입력이 맞다"는 증거이지 "똑같다"는 뜻이 아니며, 이 카드가 그리는 ' +
+        '구간 비중은 중앙값보다 훨씬 덜 민감합니다.',
       distNoteAbsent: '분포 데이터가 아직 빌드되지 않았습니다. scripts/build-distribution.mjs 를 실행하세요.',
 
       generated: (when, from, to) =>
@@ -315,6 +339,14 @@ window.I18N = {
         'Core PCE の3・6か月年率は季節調整済み指数から計算しました。' +
         'Core Sticky ex-住居費 の3か月年率もアトランタ連銀の公表値です。',
 
+      cpiDistTitle: '品目別の価格変化の分布 — CPI',
+      cpiDistSub:
+        'すぐ上と同じ図を<strong>CPIで描き直したもの</strong>です。区間の境界も軸も同じなので、' +
+        '上下を重ねて読めます。2つの指標はウェイトもカバー範囲も違い、CPIの住居費の比重が約2倍あるため、' +
+        '<strong>同じ月でも分布はかなり違って見えます</strong> — 2022年6月のピークでは3%超の割合が' +
+        'CPIで92.8%、PCEで71.3%でした。クリーブランド連銀が中央値CPIを計算するのに使う45品目が基準で、' +
+        '持家の帰属家賃を4つの地域に分けて持つのがこの品目集合の特徴です。',
+      cpiDistNoteLead: 'CPI分布の出典と限界。',
       distTitle: '品目別の価格変化の分布',
       distSub:
         '毎月のPCE構成品目の年率換算した価格変化を区間ごとに分け、<strong>支出ウェイトで加重した</strong>' +
@@ -430,6 +462,7 @@ window.I18N = {
       chartYoy: 'Trimmed Mean PCE、Core・Headline PCE、CPI4種、アトランタ連銀の Sticky・Flexible の前年比上昇率の推移を示す折れ線グラフ',
       chartMom: 'Trimmed Mean と Core PCE の年率換算上昇率の推移を示す折れ線グラフ',
       chartDist: 'PCE構成品目の年率換算した価格変化の区間別支出加重割合を示す積み上げ棒グラフ',
+      chartCpiDist: 'CPI構成品目の年率換算した価格変化の区間別支出加重割合を示す積み上げ棒グラフ',
       chartIsm: 'ISM製造業PMIと価格支払指数の推移を示す折れ線グラフ',
       chartBreadth: '前年比で3%超上昇したPCE品目の加重割合と非加重割合の推移を示す折れ線グラフ',
       themeToDark: 'ダークモードに切り替え',
@@ -496,7 +529,8 @@ window.I18N = {
         corePce: ['Core PCE', '食料・エネルギー除く'],
         headlinePce: ['Headline PCE', '前年比'],
         coreSticky: ['Core Sticky CPI', 'アトランタ連銀'],
-        above3m1: ['3%超・1か月年率', '支出加重'],
+        above3m1: ['3%超・PCE', '1か月年率・支出加重'],
+        above3cpi: ['3%超・CPI', '1か月年率・支出加重'],
         above3yoy: ['3%超・前年比', '支出加重'],
       },
 
@@ -512,7 +546,7 @@ window.I18N = {
           shelter: '住居費', stickyExShelter: 'Core Sticky ex-住居費', coreSticky: 'Core Sticky',
           stickyAll: 'Sticky', flexCpi: 'Flexible',
           tmAnn1m: 'TM 1m年率', tmAnn6m: 'TM 6m年率', coreAnn6m: 'Core PCE 6m',
-          above3m1: '3%超 1m', bWeighted: '3%超 YoY 加重', bUnweighted: '3%超 YoY 非加重',
+          above3m1: '3%超 PCE', above3cpi: '3%超 CPI', bWeighted: '3%超 YoY 加重', bUnweighted: '3%超 YoY 非加重',
         },
         caption: (from, to, n) =>
           `${from} 〜 ${to} ・単位 % ・左から${n}列は前年比、それ以降は年率換算または割合 ・未公表の月は —`,
@@ -527,6 +561,20 @@ window.I18N = {
             `Trimmed Mean を逆算して公表系列と比較した平均誤差は${m.validation.trimMeanAbsDev}%ptです。`
           : '。') +
         ' 区間の境界（0・2・3・5・10%）は年率換算基準で、どの区間にも入らない残りが「下落」です。',
+      cpiDistNote: (m) =>
+        'クリーブランド連銀も中央値CPIと16%刈込平均しか公表しておらず、その背後の分布は出していません' +
+        '（当月の品目表が1枚あるだけです）。そこで' + m.months[0] + '以降の全期間を、連銀が使うのと' +
+        '同じ材料 — 労働統計局の品目別CPIと相対重要度 — で計算し直しました' +
+        (m.validation
+          ? ' — 当月の品目表と照合した平均誤差は' + m.validation.componentMeanDev + '%pt、' +
+            '中央値を逆算して公表系列と比較した平均誤差は' + m.validation.medianMeanDev + '%ptです。'
+          : '。') +
+        ' 2点だけ連銀と完全には一致しません。地域別の持家の帰属家賃は季節調整系列が公表されないため' +
+        '原系列を使っており（その4品目で0.2〜0.6%pt）、相対重要度も全国分しか公表されないため地域の' +
+        'ウェイトは全国値を連銀表の現在の比率で按分しています。1997年より前は品目コード体系が違うため' +
+        '除いています。中央値は45品目の上では階段関数で、順序が1つ入れ替わるだけで答えが一段動きます — ' +
+        '上の誤差は「入力が正しい」証拠であって「同一だ」という意味ではなく、このカードが描く区間別の' +
+        '割合は中央値よりはるかに鈍感です。',
       distNoteAbsent: '分布データがまだビルドされていません。scripts/build-distribution.mjs を実行してください。',
 
       generated: (when, from, to) =>

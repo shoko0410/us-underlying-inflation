@@ -17,10 +17,10 @@
  *   - FRED also supplies USREC for the recession bands and the Atlanta Fed sticky-price
  *     series, neither of which BLS publishes.
  *
- * The component-price distribution ("share of PCE components above 3%") is NOT fetched
- * here. The Dallas Fed publishes only a rolling 13 months of it, so it is reconstructed
- * from BEA underlying detail by scripts/build-distribution.mjs and merged in from
- * data/distribution.json if that file exists.
+ * The two component-price distributions are NOT fetched here. Neither the Dallas Fed nor
+ * the Cleveland Fed publishes its distribution as history, so both are reconstructed by
+ * their own scripts — build-distribution.mjs from BEA underlying detail, and
+ * build-cpi-distribution.mjs from BLS item data — and merged in from their files.
  *
  * Raw API responses are cached under data/.cache so re-running while iterating on the
  * site does not burn the BLS free-tier budget (25 requests/day/IP, 10 years/request).
@@ -471,19 +471,25 @@ async function main() {
     (m) => series.stickyExShelter?.yoy[months.indexOf(m)] != null
   );
 
-  // The component distribution is reconstructed separately; merge it if it is there.
-  let distribution = null;
-  const distPath = path.join(ROOT, 'data', 'distribution.json');
-  if (existsSync(distPath)) {
-    try {
-      distribution = JSON.parse(await readFile(distPath, 'utf8'));
-      log(`  distribution  ${distribution.months?.length ?? 0} months from data/distribution.json`);
-    } catch (err) {
-      log(`  ! distribution.json unreadable, shipping without it: ${err.message}`);
+  // Both component distributions are reconstructed separately — PCE from BEA underlying
+  // detail, CPI from BLS item data — so they are merged in from their own files.
+  const loadSide = async (file, script) => {
+    const at = path.join(ROOT, 'data', file);
+    if (!existsSync(at)) {
+      log(`  ! data/${file} absent — run ${script}`);
+      return null;
     }
-  } else {
-    log('  ! data/distribution.json absent — run scripts/build-distribution.mjs');
-  }
+    try {
+      const v = JSON.parse(await readFile(at, 'utf8'));
+      log(`  ${file.padEnd(24)} ${v.months?.length ?? 0} months`);
+      return v;
+    } catch (err) {
+      log(`  ! ${file} unreadable, shipping without it: ${err.message}`);
+      return null;
+    }
+  };
+  const distribution = await loadSide('distribution.json', 'scripts/build-distribution.mjs');
+  const cpiDistribution = await loadSide('cpi-distribution.json', 'scripts/build-cpi-distribution.mjs');
 
   const payload = {
     generatedAt: null, // filled in below, once we know whether anything changed
@@ -492,6 +498,7 @@ async function main() {
     months,
     series,
     distribution,
+    cpiDistribution,
     recessions,
     missing,
     missingButSticky,
@@ -516,6 +523,7 @@ async function main() {
       if (!series[key]) problems.push(`the Atlanta Fed series "${key}" did not come back`);
     }
     if (!distribution) problems.push('data/distribution.json is missing');
+    if (!cpiDistribution) problems.push('data/cpi-distribution.json is missing');
     if (existsSync(jsonPath)) {
       try {
         const prev = JSON.parse(await readFile(jsonPath, 'utf8'));
@@ -525,9 +533,11 @@ async function main() {
         if (months.length < (prev.months?.length ?? 0)) {
           problems.push(`month count shrank: ${prev.months.length} -> ${months.length}`);
         }
-        const prevDist = prev.distribution?.months?.length ?? 0;
-        if ((distribution?.months?.length ?? 0) < prevDist) {
-          problems.push(`distribution shrank: ${prevDist} -> ${distribution?.months?.length ?? 0}`);
+        for (const [key, now] of [['distribution', distribution], ['cpiDistribution', cpiDistribution]]) {
+          const was = prev[key]?.months?.length ?? 0;
+          if ((now?.months?.length ?? 0) < was) {
+            problems.push(`${key} shrank: ${was} -> ${now?.months?.length ?? 0}`);
+          }
         }
       } catch {
         // No readable previous build to compare against; the checks above still apply.
@@ -577,9 +587,9 @@ async function main() {
   log(`missing       ${missing.length ? missing.join(', ') : 'none'}` +
       (missingButSticky.length ? `  (sticky still reports: ${missingButSticky.join(', ')})` : ''));
   log(`recessions    ${recessions.length}`);
-  log(`distribution  ${distribution
-    ? `${distribution.months.length} months, above3 latest = ${distribution.above3.at(-1)}%`
-    : 'absent'}`);
+  const distLine = (v) => (v ? `${v.months.length} months, above3 latest = ${v.above3.at(-1)}%` : 'absent');
+  log(`distribution  PCE ${distLine(distribution)}`);
+  log(`              CPI ${distLine(cpiDistribution)}`);
   log(`latest YoY    trimmed mean = ${at(series.trimmedMean.yoy)}` +
       ` · core PCE = ${at(series.corePce.yoy)}` +
       ` · headline PCE = ${at(series.headlinePce.yoy)}`);

@@ -99,6 +99,22 @@
          data-aria="chartDist" aria-label="PCE 구성품목의 연율화 가격 변화 구간별 지출가중 비중 누적 막대그래프"></div>
   </section>
 
+  <section class="card" id="card-cpi-dist" hidden>
+    <div class="card-head">
+      <h2 data-i18n="cpiDistTitle">품목별 가격 변화 분포 — CPI</h2>
+      <p class="card-sub" data-i18n="cpiDistSub">
+        바로 위와 같은 그림을 <strong>CPI로 다시 그린 것</strong>입니다. 구간 경계와 축이 같으니
+        위아래를 겹쳐 읽으시면 됩니다. 두 지표는 가중치·포괄범위가 다르고 CPI의 주거비 비중이
+        약 두 배라, <strong>같은 달인데도 분포가 꽤 다르게 나옵니다</strong> — 2022년 6월 정점에서
+        3% 초과 비중이 CPI는 92.8%, PCE는 71.3%였습니다. 클리브랜드 연준이 중앙값 CPI를 계산할 때
+        쓰는 45개 품목 기준이고, 자가주거비를 4개 지역으로 나눠 담는 것이 그 집합의 특징입니다.
+      </p>
+    </div>
+    <div class="legend legend-static" id="legend-cpi-dist" role="group" data-aria="legendStatic" aria-label="구간 색상 범례"></div>
+    <div class="chart-host" id="chart-cpi-dist" tabindex="0" role="img" data-aria="chartCpiDist"
+         aria-label="CPI 구성품목의 연율화 가격 변화 구간별 지출가중 비중 누적 막대그래프"></div>
+  </section>
+
   <section class="card" id="card-breadth" hidden>
     <div class="card-head">
       <h2 data-i18n="breadthTitle">물가 상승의 확산 정도 — 3% 초과 항목 비중</h2>
@@ -175,6 +191,9 @@
       </li>
       <li id="note-dist">
         <strong data-i18n="distNoteLead">분포 데이터의 출처와 한계.</strong>
+      </li>
+      <li id="note-cpi-dist">
+        <strong data-i18n="cpiDistNoteLead">CPI 분포의 출처와 한계.</strong>
       </li>
       <li data-i18n="noteSticky">
         <strong>Sticky와 Flexible은 "빼는" 지표가 아니라 "가중치를 다시 주는" 지표입니다.</strong>

@@ -61,6 +61,15 @@ jobs:
           FRED_API_KEY: ${{ secrets.FRED_API_KEY }}
         run: node scripts/build-distribution.mjs --fresh --strict --if-changed
 
+      # The Cleveland Fed is to CPI what the Dallas Fed is to PCE: it publishes measures
+      # read off the distribution but not the distribution itself. --if-changed reads its
+      # 2 KB component table first and stops there unless a new month has landed, so the
+      # 45 BLS series behind this are only pulled when there is something new to build.
+      - name: Rebuild the CPI component distribution from BLS
+        env:
+          BLS_API_KEY: ${{ secrets.BLS_API_KEY }}
+        run: node scripts/build-cpi-distribution.mjs --fresh --strict --if-changed
+
       - name: Fetch latest PCE and CPI data
         env:
           FRED_API_KEY: ${{ secrets.FRED_API_KEY }}
@@ -72,14 +81,14 @@ jobs:
 
       - name: Commit if the numbers changed
         run: |
-          if git diff --quiet -- data/pce.json data/distribution.json public/data.js; then
+          if git diff --quiet -- data/pce.json data/distribution.json data/cpi-distribution.json public/data.js; then
             echo "No change — nothing new was published since the last run."
             exit 0
           fi
           latest=$(node -p "require('./data/pce.json').latestMonth")
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add data/pce.json data/distribution.json public/data.js
+          git add data/pce.json data/distribution.json data/cpi-distribution.json public/data.js
           git commit -m "data: refresh through ${latest}"
           git push
 
