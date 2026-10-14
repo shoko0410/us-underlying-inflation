@@ -340,7 +340,8 @@
     "2026-05",
     "2026-06",
     "2026-07",
-    "2026-08"
+    "2026-08",
+    "2026-09"
   ],
   "bands": {
     "fell": [
@@ -684,7 +685,8 @@
       18.07,
       35.54,
       17.85,
-      18.43
+      18.43,
+      16.18
     ],
     "b0_2": [
       11.74,
@@ -1027,7 +1029,8 @@
       15.59,
       18.4,
       18.03,
-      16.61
+      16.61,
+      8.37
     ],
     "b2_3": [
       39.69,
@@ -1370,7 +1373,8 @@
       10.86,
       25.41,
       7.02,
-      24.18
+      24.18,
+      18.21
     ],
     "b3_5": [
       24.69,
@@ -1713,7 +1717,8 @@
       30.45,
       6.88,
       37.33,
-      25.22
+      25.22,
+      24.92
     ],
     "b5_10": [
       2.71,
@@ -2056,7 +2061,8 @@
       17.02,
       9.67,
       17.13,
-      2.44
+      2.44,
+      24.43
     ],
     "b10": [
       1.32,
@@ -2399,7 +2405,8 @@
       8,
       4.1,
       2.64,
-      13.11
+      13.11,
+      7.89
     ]
   },
   "above3": [
@@ -2743,7 +2750,8 @@
     55.48,
     20.66,
     57.11,
-    40.78
+    40.78,
+    57.24
   ],
   "source": {
     "components": {
@@ -2762,12 +2770,12 @@
       "from": 1997
     },
     "firstMonth": "1998-02",
-    "publishedLast": "2026-08",
+    "publishedLast": "2026-09",
     "oerShares": {
       "South": 0.35114503816793896,
+      "West": 0.27099236641221375,
       "Northeast": 0.19847328244274812,
-      "Midwest": 0.17938931297709929,
-      "West": 0.27099236641221375
+      "Midwest": 0.17938931297709929
     }
   },
   "method": {
@@ -2783,16 +2791,16 @@
       "Motor vehicle fees",
       "Tenants' and household insurance",
       "South:Owners' equivalent rent of residences",
-      "Northeast: Owners' equivalent rent of residences",
-      "Midwest: Owners' equivalent rent of residences",
       "West: Owners' equivalent rent of residences",
-      "Personal care services"
+      "Northeast: Owners' equivalent rent of residences",
+      "Personal care services",
+      "Midwest: Owners' equivalent rent of residences"
     ]
   },
   "validation": {
     "componentsMatched": 45,
-    "componentMeanDev": 0.06,
-    "componentMaxDev": 0.89,
+    "componentMeanDev": 0.14,
+    "componentMaxDev": 3.69,
     "medianMeanDev": 0.22,
     "medianMaxDev": 1.32,
     "trimMeanDev": 0.34,
